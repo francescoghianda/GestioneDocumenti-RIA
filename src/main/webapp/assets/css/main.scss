@@ -1,0 +1,264 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
+
+*{
+  box-sizing: border-box;
+}
+
+body{
+  height: 100%;
+  padding-left: 20%;
+  padding-right: 20%;
+  background-color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.container{
+
+  width: 100%;
+
+  & > header{
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+    height: 56px;
+    background-color: #3f85ff;
+    color: white;
+    font-size: 24px;
+
+    & > a{
+      width: 24px;
+      height: 24px;
+      margin-right: 16px;
+    }
+  }
+
+}
+
+.right-buttons{
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-left: auto;
+}
+
+.list{
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  color: white;
+
+  .item{
+    display: grid;
+    grid-template-rows: 56px auto;
+    align-items: center;
+    width: 100%;
+    height: min-content;
+    min-height: 56px;
+    background-color: #4a6cc4;
+
+    & > .item-content{
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding-left: 16px;
+      padding-right: 16px;
+
+      & > .item-text{
+        padding-left: 8px;
+        padding-right: 16px;
+      }
+
+      & > .item-icon{
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &:not(:first-child){
+      border-top: 1px solid #132357;
+    }
+  }
+}
+
+.sub-list{
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  overflow: hidden;
+  will-change: height;
+
+  &.hidden{
+    height: 0;
+  }
+
+  & > .sub-item{
+    display: flex;
+    align-items: center;
+    background-color: #2949a5;
+    height: 56px;
+    border-top: 1px solid #132357;
+
+    &.disabled{
+      background-color: #bdcfff;
+
+      & > .sub-item-content > .item-text, & > .sub-item-content > .item-text:visited {
+        color: #7687ff;
+        cursor: not-allowed;
+      }
+    }
+
+    & > .sub-item-content{
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding-left: 48px;
+
+      & > .item-text{
+        padding-left: 8px;
+        padding-right: 16px;
+        color: white;
+        &:visited{
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+.document-table{
+  width: 100%;
+  overflow: hidden;
+  border-collapse: collapse;
+  border: solid 0;
+
+  & > tbody > tr{
+    width: 100%;
+    height: 56px;
+    background-color: #4a6cc4;
+    color: white;
+    border-collapse: collapse;
+    border: solid 0;
+
+    & > th{
+      width: 1%;
+      text-align: left;
+      padding-left: 16px;
+      white-space: nowrap;
+      border-collapse: collapse;
+      border: solid 0;
+    }
+
+    & > td{
+      padding: 16px;
+      border-collapse: collapse;
+      border: solid 0;
+    }
+  }
+}
+
+.button{
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  text-decoration: none;
+  padding-left: 8px;
+  padding-right: 8px;
+  color: white;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 16px;
+
+  & > a:visited{
+    color: white;
+  }
+
+  .btn-icon{
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
+
+  &.outline-blue{
+    border: 1px solid #001150;
+    transition: background-color .2s;
+
+    &:hover{
+      background-color: #1132ac;
+    }
+  }
+}
+
+form{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #4a6cc4;
+  padding: 8px;
+
+  & > .form-row{
+    width: 100%;
+    height: min-content;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    & > input[type=submit]{
+      margin-top: 0;
+    }
+
+    & > *{
+      margin-left: 4px;
+      margin-right: 4px;
+
+      &:first-child{
+        margin-left: 0;
+      }
+
+      &:last-child{
+        margin-right: 0;
+      }
+    }
+  }
+
+  input[type=text] {
+    width: 100%;
+    height: 56px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: 24px;
+    border: 1px solid white;
+    border-radius: 4px;
+  }
+
+  input[type=submit]{
+    text-transform: uppercase;
+    padding-left: 8px;
+    padding-right: 8px;
+    height: 56px;
+    min-width: 100px;
+    background-color: #3f85ff;
+    color: white;
+    border: 1px solid white;
+    border-radius: 4px;
+    outline: none;
+    margin-left: auto;
+    margin-top: 16px;
+  }
+
+  label{
+    font-size: 18px;
+    color: white;
+  }
+
+}

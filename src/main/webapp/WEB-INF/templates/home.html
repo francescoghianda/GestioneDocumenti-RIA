@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+
+    <link rel="stylesheet" href="../../assets/css/main.css" th:href="@{/assets/css/main.css}">
+
+
+    <script>
+
+        window.onload = function () {
+
+            Array.from(document.getElementsByClassName('open-folder-btn')).forEach(button =>
+            {
+               button.onclick = function () {
+                   button.closest('.item').querySelector('.sub-list').classList.remove('hidden');
+                   button.style.display = "none";
+                   button.nextElementSibling.removeAttribute('style');
+               }
+            });
+
+            Array.from(document.getElementsByClassName('close-folder-btn')).forEach(button =>
+            {
+                button.onclick = function () {
+                    button.closest('.item').querySelector('.sub-list').classList.add('hidden');
+                    button.style.display = "none";
+                    button.previousElementSibling.removeAttribute('style');
+                }
+            });
+        }
+
+    </script>
+
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <span th:if="${moveDocument}" th:text="'Stai spostando il documento '+${doc.name}+' dalla sottocartella '+${subDirectory.name}"></span>
+            <span th:unless="${moveDocument}">I tuoi file</span>
+            <div class="right-buttons">
+                <a title="Crea nuova cartella" class="button" th:href="@{/new-directory(parent='0')}">
+                    <img class="btn-icon" src="../../assets/images/create_new_folder-24px.svg" th:src="@{/assets/images/create_new_folder-24px.svg}">
+                </a>
+            </div>
+        </header>
+        <ul class="list">
+            <li class="item" th:each="dirNode : ${tree.root.getChildren()}">
+                <div class="item-content">
+                    <img class="item-icon" src="../../assets/images/folder-24px.svg" th:src="@{/assets/images/folder-24px.svg}">
+                    <span class="item-text" th:text="${dirNode.value.name}">Directory 1</span>
+                    <div class="right-buttons">
+                        <button class="button open-folder-btn">apri</button>
+                        <button class="button close-folder-btn" style="display: none">chiudi</button>
+                        <a title="Crea nuova cartella" class="button" th:href="@{/new-directory(parent=${dirNode.value.id})}">
+                            <img class="btn-icon" src="../../assets/images/create_new_folder-24px.svg" th:src="@{/assets/images/create_new_folder-24px.svg}">
+                        </a>
+                    </div>
+                </div>
+                <ul class="sub-list hidden">
+                    <li class="sub-item" th:class="${moveDocument && dir.id == doc.parentId} ? 'sub-item disabled' : 'sub-item'" th:each="dir : ${dirNode.getChildrenValues()}">
+                        <div class="sub-item-content">
+                            <img class="item-icon" src="../../assets/images/folder-24px.svg" th:src="@{/assets/images/folder-24px.svg}">
+                            <a class="item-text" href="#" th:text="${dir.name}" th:href="${moveDocument} ? (${dir.id == doc.parentId} ? '#' : @{/move(dir=${dir.id}, doc=${doc.id})}) : @{/documents(dir=${dir.id})}">Sub-dir 1</a>
+                        </div>
+                    </li>
+                    <li  class="sub-item"th:if="${dirNode.getChildrenValues().isEmpty()}">
+                        <div class="sub-item-content">
+                            <a class="item-text">Cartella vuota</a>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+
+</body>
+</html>
