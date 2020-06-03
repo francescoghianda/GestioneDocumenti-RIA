@@ -8,7 +8,7 @@
 
   <context-param>
     <param-name>dbUrl</param-name>
-    <param-value>jdbc:mysql://127.0.0.1:3306/db_gestione_documenti?serverTimezone=UTC</param-value>
+    <param-value>jdbc:mysql://127.0.0.1:3306/db_gestione_documenti_ria?serverTimezone=UTC</param-value>
   </context-param>
   <context-param>
     <param-name>dbUser</param-name>
