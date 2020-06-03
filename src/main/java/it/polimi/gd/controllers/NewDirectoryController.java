@@ -1,11 +1,10 @@
 package it.polimi.gd.controllers;
 
 import it.polimi.gd.Application;
-import it.polimi.gd.beans.DirectoryMetadata;
+import it.polimi.gd.beans.Directory;
 import it.polimi.gd.dao.DirectoryDao;
 import org.thymeleaf.context.WebContext;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -63,7 +62,7 @@ public class NewDirectoryController extends HttpServlet
 
             if(parentId != 0)
             {
-                Optional<DirectoryMetadata> parentDir = directoryDao.findDirectoryById(parentId);
+                Optional<Directory> parentDir = directoryDao.findDirectoryById(parentId);
 
                 if(!parentDir.isPresent())
                 {

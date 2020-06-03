@@ -1,10 +1,9 @@
 package it.polimi.gd.controllers;
 
-import it.polimi.gd.beans.DocumentMetadata;
+import it.polimi.gd.beans.Document;
 import it.polimi.gd.dao.DocumentDao;
 import it.polimi.utils.file.FileManager;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +38,7 @@ public class DownloadDocumentController extends HttpServlet
         try
         {
             int documentId = Integer.parseInt(req.getParameter("doc"));
-            DocumentMetadata document = documentDao.findDocumentById(documentId).orElseThrow(FileNotFoundException::new);
+            Document document = documentDao.findDocumentById(documentId).orElseThrow(FileNotFoundException::new);
             FileInputStream inputStream = fileManager.getFileInputStream(documentId);
             ServletOutputStream outputStream = resp.getOutputStream();
 

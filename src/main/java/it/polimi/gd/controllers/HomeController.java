@@ -2,8 +2,8 @@ package it.polimi.gd.controllers;
 
 import it.polimi.gd.Application;
 
-import it.polimi.gd.beans.DirectoryMetadata;
-import it.polimi.gd.beans.DocumentMetadata;
+import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.Document;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 import it.polimi.utils.file.DirectoriesTree;
@@ -49,7 +49,7 @@ public class HomeController extends HttpServlet
             int documentId = Integer.parseInt(Objects.toString(req.getParameter("move-doc"), "0"));
             boolean moveDocument = documentId != 0;
 
-            Optional<DocumentMetadata> document = moveDocument ? documentDao.findDocumentById(documentId) : Optional.empty();
+            Optional<Document> document = moveDocument ? documentDao.findDocumentById(documentId) : Optional.empty();
 
             if(moveDocument && !document.isPresent())
             {
@@ -57,7 +57,7 @@ public class HomeController extends HttpServlet
                 return;
             }
 
-            List<DirectoryMetadata> directories = directoryDao.findAll();
+            List<Directory> directories = directoryDao.findAll();
 
             DirectoriesTree directoriesTree = DirectoriesTree.build(directories);
 

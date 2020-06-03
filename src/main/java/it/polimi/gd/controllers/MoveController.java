@@ -1,16 +1,14 @@
 package it.polimi.gd.controllers;
 
-import it.polimi.gd.beans.DirectoryMetadata;
-import it.polimi.gd.beans.DocumentMetadata;
+import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.Document;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -18,7 +16,6 @@ import java.util.Optional;
 @WebServlet("/move")
 public class MoveController extends HttpServlet
 {
-
     public DocumentDao documentDao;
     public DirectoryDao directoryDao;
 
@@ -43,7 +40,7 @@ public class MoveController extends HttpServlet
             int directoryId = Integer.parseInt(req.getParameter("dir"));
             int documentId = Integer.parseInt(req.getParameter("doc"));
 
-            Optional<DirectoryMetadata> directory = directoryDao.findDirectoryById(directoryId);
+            Optional<Directory> directory = directoryDao.findDirectoryById(directoryId);
 
             if(!directory.isPresent())
             {
@@ -51,7 +48,7 @@ public class MoveController extends HttpServlet
                 return;
             }
 
-            Optional<DocumentMetadata> document = documentDao.findDocumentById(documentId);
+            Optional<Document> document = documentDao.findDocumentById(documentId);
 
             if(!document.isPresent())
             {
@@ -62,6 +59,12 @@ public class MoveController extends HttpServlet
             if(document.get().getParentId() == directory.get().getId() || directory.get().getId() == 0)
             {
                 resp.sendError(409, "Cannot move the document in that directory!");
+                return;
+            }
+
+            if(documentDao.exists(document.get().getName(), directoryId))
+            {
+                resp.sendError(409, "Document with name "+document.get().getName()+" already exists in this directory!");
                 return;
             }
 

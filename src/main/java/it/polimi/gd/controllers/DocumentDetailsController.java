@@ -1,7 +1,7 @@
 package it.polimi.gd.controllers;
 
 import it.polimi.gd.Application;
-import it.polimi.gd.beans.DocumentMetadata;
+import it.polimi.gd.beans.Document;
 import it.polimi.gd.dao.DocumentDao;
 import org.thymeleaf.context.WebContext;
 
@@ -36,7 +36,7 @@ public class DocumentDetailsController extends HttpServlet
         try
         {
             int documentId = Integer.parseInt(req.getParameter("doc"));
-            Optional<DocumentMetadata> document = documentDao.findDocumentById(documentId);
+            Optional<Document> document = documentDao.findDocumentById(documentId);
 
             if(!document.isPresent())
             {

@@ -1,15 +1,10 @@
 package it.polimi.gd.dao;
 
-import it.polimi.gd.beans.DocumentMetadata;
-import it.polimi.utils.file.Document;
+import it.polimi.gd.beans.Document;
 import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
-import java.net.CookieHandler;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -24,9 +19,9 @@ public class DocumentDao
         connectionPool = ConnectionPool.getInstance();
     }
 
-    private DocumentMetadata metadataFromResultSet(ResultSet resultSet) throws SQLException
+    private Document metadataFromResultSet(ResultSet resultSet) throws SQLException
     {
-        return new DocumentMetadata(
+        return new Document(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getDate("creation_date"),
@@ -35,7 +30,7 @@ public class DocumentDao
                 resultSet.getInt("parent"));
     }
 
-    public Optional<DocumentMetadata> findDocumentById(int documentId) throws SQLException
+    public Optional<Document> findDocumentById(int documentId) throws SQLException
     {
         try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
@@ -51,7 +46,7 @@ public class DocumentDao
         }
     }
 
-    public List<DocumentMetadata> findDocumentsByParentId(int parentId) throws SQLException
+    public List<Document> findDocumentsByParentId(int parentId) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
@@ -61,7 +56,7 @@ public class DocumentDao
 
             try(ResultSet resultSet = statement.executeQuery())
             {
-                List<DocumentMetadata> metadataList = new ArrayList<>();
+                List<Document> metadataList = new ArrayList<>();
                 while (resultSet.next())
                     metadataList.add(metadataFromResultSet(resultSet));
                 return metadataList;
@@ -82,28 +77,27 @@ public class DocumentDao
         }
     }
 
-    public Optional<DocumentMetadata> getDocumentMetadata(String documentName, int parentId) throws SQLException
+    public boolean exists(String documentName, int parentId) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM document doc WHERE doc.name = ? AND doc.parent = ?"))
+                    "SELECT id FROM document doc WHERE doc.name = ? AND doc.parent = ?"))
         {
             statement.setString(1, documentName);
             statement.setInt(2, parentId);
 
             try(ResultSet resultSet = statement.executeQuery())
             {
-                if(!resultSet.next())return Optional.empty();
-                return Optional.of(metadataFromResultSet(resultSet));
+                return resultSet.next();
             }
         }
     }
 
-    public boolean createDocument(String documentName, String summary, String documentType, int parentId) throws SQLException
+    public int createDocument(String documentName, String summary, String documentType, int parentId) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "INSERT INTO document (name, creation_date, summary, type, parent) VALUES (?, ?, ?, ?, ?)"))
+                    "INSERT INTO document (name, creation_date, summary, type, parent) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
         {
             statement.setString(1, documentName);
             statement.setDate(2, new Date(Calendar.getInstance().getTimeInMillis()));
@@ -111,6 +105,32 @@ public class DocumentDao
             statement.setString(4, documentType);
             statement.setInt(5, parentId);
 
+            connection.getConnection().setAutoCommit(false);
+
+            if(statement.executeUpdate() == 0)return -1;
+
+            try(ResultSet resultSet = statement.getGeneratedKeys())
+            {
+                if(!resultSet.next())
+                {
+                    connection.getConnection().rollback();
+                    connection.getConnection().setAutoCommit(true);
+                    return -1;
+                }
+                connection.getConnection().setAutoCommit(true);
+                return resultSet.getInt(1);
+            }
+        }
+
+    }
+
+    public boolean deleteDocument(int documentId) throws SQLException
+    {
+        try(PooledConnection connection = connectionPool.getConnection();
+            PreparedStatement statement = connection.getConnection().prepareStatement(
+                    "DELETE FROM document doc WHERE doc.id = ?"))
+        {
+            statement.setInt(1, documentId);
             return statement.executeUpdate() == 1;
         }
     }

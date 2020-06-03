@@ -1,13 +1,12 @@
 package it.polimi.gd.controllers;
 
 import it.polimi.gd.Application;
-import it.polimi.gd.beans.DirectoryMetadata;
-import it.polimi.gd.beans.DocumentMetadata;
+import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.Document;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 import org.thymeleaf.context.WebContext;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @WebServlet("/documents")
@@ -45,7 +43,7 @@ public class DocumentController extends HttpServlet
         {
             int directoryId = Integer.parseInt(req.getParameter("dir"));
 
-            Optional<DirectoryMetadata> directory = directoryDao.findDirectoryById(directoryId);
+            Optional<Directory> directory = directoryDao.findDirectoryById(directoryId);
 
             if(!directory.isPresent())
             {
@@ -53,7 +51,7 @@ public class DocumentController extends HttpServlet
                 return;
             }
 
-            List<DocumentMetadata> documents = documentDao.findDocumentsByParentId(directoryId);
+            List<Document> documents = documentDao.findDocumentsByParentId(directoryId);
 
             WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
 

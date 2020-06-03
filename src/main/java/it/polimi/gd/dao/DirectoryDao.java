@@ -1,13 +1,12 @@
 package it.polimi.gd.dao;
 
-import it.polimi.gd.beans.DirectoryMetadata;
+import it.polimi.gd.beans.Directory;
 import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -23,34 +22,34 @@ public class DirectoryDao
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
-    private DirectoryMetadata metadataFromResultSet(ResultSet resultSet) throws SQLException
+    private Directory metadataFromResultSet(ResultSet resultSet) throws SQLException
     {
-        return new DirectoryMetadata(
+        return new Directory(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getDate("creation_date"),
                 resultSet.getInt("parent"));
     }
 
-    public List<DirectoryMetadata> findAll() throws SQLException
+    public List<Directory> findAll() throws SQLException
     {
         try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "SELECT * FROM directory");
             ResultSet resultSet = statement.executeQuery())
         {
-            List<DirectoryMetadata> directories = new ArrayList<>();
+            List<Directory> directories = new ArrayList<>();
             while (resultSet.next())directories.add(metadataFromResultSet(resultSet));
             return directories;
         }
     }
 
-    public List<DirectoryMetadata> findRootDirectories() throws SQLException
+    public List<Directory> findRootDirectories() throws SQLException
     {
         return findDirectoriesByParentId(0);
     }
 
-    public List<DirectoryMetadata> findDirectoriesByParentId(int parentId) throws SQLException
+    public List<Directory> findDirectoriesByParentId(int parentId) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
@@ -60,7 +59,7 @@ public class DirectoryDao
 
             try(ResultSet resultSet = statement.executeQuery())
             {
-                List<DirectoryMetadata> metadataList = new ArrayList<>();
+                List<Directory> metadataList = new ArrayList<>();
                 while (resultSet.next())
                     metadataList.add(metadataFromResultSet(resultSet));
                 return metadataList;
@@ -68,7 +67,7 @@ public class DirectoryDao
         }
     }
 
-    public Optional<DirectoryMetadata> findDirectoryById(int id) throws SQLException
+    public Optional<Directory> findDirectoryById(int id) throws SQLException
     {
         try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
@@ -83,7 +82,7 @@ public class DirectoryDao
         }
     }
 
-    public Optional<DirectoryMetadata> findDirectory(String directoryName, int parentId) throws SQLException
+    public Optional<Directory> findDirectory(String directoryName, int parentId) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(

@@ -2,16 +2,16 @@ package it.polimi.gd.beans;
 
 import java.sql.Date;
 
-public class DirectoryMetadata
+public class Directory
 {
     private int id;
     private String name;
     private Date creationDate;
     private int parentId;
 
-    public DirectoryMetadata() {}
+    public Directory() {}
 
-    public DirectoryMetadata(int id, String name, Date creationDate, int parentId)
+    public Directory(int id, String name, Date creationDate, int parentId)
     {
         this.id = id;
         this.name = name;

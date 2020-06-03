@@ -2,7 +2,7 @@ package it.polimi.gd.beans;
 
 import java.sql.Date;
 
-public class DocumentMetadata
+public class Document
 {
     private int id;
     private String name;
@@ -11,9 +11,9 @@ public class DocumentMetadata
     private String type;
     private int parentId;
 
-    public DocumentMetadata() {}
+    public Document() {}
 
-    public DocumentMetadata(int id, String name, Date creationDate, String summary, String type, int parentId)
+    public Document(int id, String name, Date creationDate, String summary, String type, int parentId)
     {
         this.id = id;
         this.name = name;

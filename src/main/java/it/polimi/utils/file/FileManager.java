@@ -3,9 +3,7 @@ package it.polimi.utils.file;
 import it.polimi.gd.exceptions.ApplicationInitializationException;
 
 import javax.servlet.ServletContext;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 public class FileManager
 {
@@ -35,5 +33,18 @@ public class FileManager
     {
         File documentFile = new File(rootDirectoryPath+File.separator+documentId);
         return new FileInputStream(documentFile);
+    }
+
+    public FileOutputStream getFileOutputStream(int documentId) throws IOException
+    {
+        File documentFile = new File(rootDirectoryPath+File.separator+documentId);
+        if(!documentFile.createNewFile())return null;
+        return new FileOutputStream(documentFile);
+    }
+
+    public boolean fileExists(int documentId)
+    {
+        File documentFile = new File(rootDirectoryPath+File.separator+documentId);
+        return documentFile.exists() && !documentFile.isDirectory();
     }
 }
