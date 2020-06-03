@@ -42,7 +42,8 @@ public class DownloadDocumentController extends HttpServlet
             FileInputStream inputStream = fileManager.getFileInputStream(documentId);
             ServletOutputStream outputStream = resp.getOutputStream();
 
-            resp.setHeader("Content-disposition", "attachment; filename="+document.getName()+"."+document.getType().toLowerCase());
+            String format = document.getType().equals("UNKNOWN") ? "" : "."+document.getType().toLowerCase();
+            resp.setHeader("Content-disposition", "attachment; filename="+document.getName()+format);
 
             byte[] buffer = new byte[4096];
             int length;

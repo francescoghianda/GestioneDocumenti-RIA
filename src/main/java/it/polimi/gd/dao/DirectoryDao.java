@@ -33,7 +33,7 @@ public class DirectoryDao
 
     public List<Directory> findAll() throws SQLException
     {
-        try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
+        try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "SELECT * FROM directory");
             ResultSet resultSet = statement.executeQuery())
@@ -69,7 +69,7 @@ public class DirectoryDao
 
     public Optional<Directory> findDirectoryById(int id) throws SQLException
     {
-        try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
+        try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "SELECT * FROM directory dir WHERE dir.id = ?"))
         {

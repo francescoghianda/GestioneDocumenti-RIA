@@ -1,22 +1,26 @@
 package it.polimi.gd.dao;
 
 import it.polimi.gd.beans.Document;
+import it.polimi.gd.log.Log;
 import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 public class DocumentDao
 {
     private final ConnectionPool connectionPool;
+    private final SimpleDateFormat dateFormat;
 
     public DocumentDao()
     {
         connectionPool = ConnectionPool.getInstance();
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     private Document metadataFromResultSet(ResultSet resultSet) throws SQLException
@@ -32,7 +36,7 @@ public class DocumentDao
 
     public Optional<Document> findDocumentById(int documentId) throws SQLException
     {
-        try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
+        try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "SELECT * FROM document WHERE id = ?"))
         {
@@ -66,7 +70,7 @@ public class DocumentDao
 
     public boolean moveDocument(int documentId, int destinationDirectoryId) throws SQLException
     {
-        try(PooledConnection connection = ConnectionPool.getInstance().getConnection();
+        try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "UPDATE document SET parent = ? WHERE id = ?"))
         {
@@ -99,8 +103,13 @@ public class DocumentDao
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "INSERT INTO document (name, creation_date, summary, type, parent) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
         {
+
+            String date = dateFormat.format(new Date());
+
+            Log.info(date);
+
             statement.setString(1, documentName);
-            statement.setDate(2, new Date(Calendar.getInstance().getTimeInMillis()));
+            statement.setString(2, date);
             statement.setString(3, summary);
             statement.setString(4, documentType);
             statement.setInt(5, parentId);
@@ -131,18 +140,6 @@ public class DocumentDao
                     "DELETE FROM document doc WHERE doc.id = ?"))
         {
             statement.setInt(1, documentId);
-            return statement.executeUpdate() == 1;
-        }
-    }
-
-    public boolean deleteDirectory(String documentName, int parentId) throws SQLException
-    {
-        try(PooledConnection connection = connectionPool.getConnection();
-            PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "DELETE FROM document doc WHERE doc.name = ? AND doc.parent = ?"))
-        {
-            statement.setString(1, documentName);
-            statement.setInt(2, parentId);
             return statement.executeUpdate() == 1;
         }
     }

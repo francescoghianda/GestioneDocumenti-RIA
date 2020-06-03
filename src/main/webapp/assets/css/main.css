@@ -15,6 +15,7 @@ body {
 
 .container {
   width: 100%;
+  overflow: hidden;
 }
 .container > header {
   display: flex;
@@ -129,6 +130,7 @@ body {
   color: white;
   border-collapse: collapse;
   border: solid 0;
+  overflow: hidden;
 }
 .document-table > tbody > tr > th {
   width: 1%;
@@ -142,6 +144,9 @@ body {
   padding: 16px;
   border-collapse: collapse;
   border: solid 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .button {
@@ -211,6 +216,7 @@ form input[type=text] {
   font-size: 24px;
   border: 1px solid white;
   border-radius: 4px;
+  padding: 8px;
 }
 form input[type=submit] {
   text-transform: uppercase;
@@ -241,6 +247,7 @@ form textarea {
   border-radius: 4px;
   resize: vertical;
   min-height: 56px;
+  padding: 8px;
 }
 form label {
   font-size: 18px;

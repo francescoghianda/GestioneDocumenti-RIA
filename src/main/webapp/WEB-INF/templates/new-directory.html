@@ -15,7 +15,7 @@
             <input type="hidden" name="parent" th:value="${parentId}">
             <label for="input-dir-name">Nome cartella:</label>
             <div class="form-row">
-                <input id="input-dir-name" type="text" name="name">
+                <input id="input-dir-name" type="text" name="name" th:maxlength="${maxNameLen}" required>
                 <input type="submit" value="Crea">
             </div>
         </form>

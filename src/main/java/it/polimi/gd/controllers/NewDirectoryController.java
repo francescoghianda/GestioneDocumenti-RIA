@@ -18,6 +18,7 @@ import java.util.Optional;
 public class NewDirectoryController extends HttpServlet
 {
     private DirectoryDao directoryDao;
+    private int maxDirectoryNameLength;
 
     public NewDirectoryController()
     {
@@ -28,6 +29,7 @@ public class NewDirectoryController extends HttpServlet
     public void init()
     {
         directoryDao = new DirectoryDao();
+        maxDirectoryNameLength = Integer.parseInt(getServletContext().getInitParameter("maxDirectoryNameLength"));
     }
 
     @Override
@@ -38,6 +40,7 @@ public class NewDirectoryController extends HttpServlet
             int parentId = Integer.parseInt(req.getParameter("parent"));
             WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
             webContext.setVariable("parentId", parentId);
+            webContext.setVariable("maxNameLen", maxDirectoryNameLength);
             Application.getTemplateEngine().process("new-directory", webContext, resp.getWriter());
         }
         catch (NumberFormatException e)
@@ -54,7 +57,7 @@ public class NewDirectoryController extends HttpServlet
             int parentId = Integer.parseInt(req.getParameter("parent"));
             String name = Objects.toString(req.getParameter("name"), "");
 
-            if(name.trim().isEmpty())
+            if(name.trim().isEmpty() || name.length() > maxDirectoryNameLength)
             {
                 resp.sendError(400, "Invalid directory name!");
                 return;

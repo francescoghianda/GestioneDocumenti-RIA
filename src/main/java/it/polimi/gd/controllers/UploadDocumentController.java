@@ -28,6 +28,9 @@ public class UploadDocumentController extends HttpServlet
     private DirectoryDao directoryDao;
     private DocumentDao documentDao;
     private FileManager fileManager;
+    private int maxDocumentNameLength;
+    private int maxDocumentTypeLength;
+    private int maxDocumentSummaryLength;
 
     public UploadDocumentController()
     {
@@ -40,6 +43,9 @@ public class UploadDocumentController extends HttpServlet
         documentDao = new DocumentDao();
         directoryDao = new DirectoryDao();
         fileManager = FileManager.getInstance(getServletContext());
+        maxDocumentNameLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentNameLength"));
+        maxDocumentTypeLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentTypeLength"));
+        maxDocumentSummaryLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentSummaryLength"));
     }
 
     @Override
@@ -51,6 +57,8 @@ public class UploadDocumentController extends HttpServlet
 
             WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
             webContext.setVariable("parentId", parentId);
+            webContext.setVariable("maxNameLen", maxDocumentNameLength);
+            webContext.setVariable("maxSummaryLen", maxDocumentSummaryLength);
             Application.getTemplateEngine().process("upload-document", webContext, resp.getWriter());
         }
         catch (NumberFormatException e)
@@ -82,9 +90,15 @@ public class UploadDocumentController extends HttpServlet
                 resp.sendError(404, "Directory not found!");
             }
 
-            if(name.trim().isEmpty())
+            if(name.trim().isEmpty() || name.length() > maxDocumentNameLength)
             {
                 resp.sendError(400, "Invalid document name!");
+                return;
+            }
+
+            if(summary.length() > maxDocumentSummaryLength)
+            {
+                resp.sendError(400, "Summary too long! (max "+maxDocumentSummaryLength+" characters)");
                 return;
             }
 
@@ -92,6 +106,12 @@ public class UploadDocumentController extends HttpServlet
 
             String[] fileName = documentPart.getSubmittedFileName().split("\\.");
             String documentType = fileName.length >= 2 ? fileName[fileName.length-1].toUpperCase() : "UNKNOWN";
+
+            if(documentType.length() > maxDocumentTypeLength)
+            {
+                resp.sendError(400, "Document format too long! (max "+maxDocumentTypeLength+" characters)");
+                return;
+            }
 
             int documentId;
 

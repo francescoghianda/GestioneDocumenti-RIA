@@ -10,6 +10,8 @@ import javax.servlet.ServletContext;
 
 public class Application
 {
+    private static ServletContext context;
+
     private static FileManager fileManager;
 
     private static String templatesPath = "/WEB-INF/templates/";
@@ -22,6 +24,7 @@ public class Application
     {
         Log.info("Init application...");
 
+        Application.context = context;
         fileManager = FileManager.getInstance(context);
 
         templateResolver = new ServletContextTemplateResolver(context);
@@ -57,6 +60,11 @@ public class Application
     public static TemplateEngine getTemplateEngine()
     {
         return templateEngine;
+    }
+
+    public static ServletContext getServletContext()
+    {
+        return context;
     }
 
 }
