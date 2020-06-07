@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>it.polimi</groupId>
-  <artifactId>Gestione Documenti</artifactId>
+  <artifactId>Gestione Documenti RIA</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
-  <name>Gestione Documenti</name>
+  <name>Gestione Documenti RIA</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,10 +37,23 @@
       <artifactId>thymeleaf</artifactId>
       <version>3.0.11.RELEASE</version>
     </dependency>
+
+    <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+      <version>1.1.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <version>1.1.4</version>
+    </dependency>
+
   </dependencies>
 
   <build>
-    <finalName>Gestione Documenti</finalName>
+    <finalName>Gestione Documenti RIA</finalName>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -50,10 +63,6 @@
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>

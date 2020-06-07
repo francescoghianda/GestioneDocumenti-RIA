@@ -2,6 +2,7 @@ package it.polimi.gd.controllers;
 
 import it.polimi.gd.beans.Directory;
 import it.polimi.gd.beans.Document;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 
@@ -37,10 +38,11 @@ public class MoveController extends HttpServlet
 
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int directoryId = Integer.parseInt(req.getParameter("dir"));
             int documentId = Integer.parseInt(req.getParameter("doc"));
 
-            Optional<Directory> directory = directoryDao.findDirectoryById(directoryId);
+            Optional<Directory> directory = directoryDao.findDirectoryById(directoryId, user.getId());
 
             if(!directory.isPresent())
             {
@@ -48,7 +50,7 @@ public class MoveController extends HttpServlet
                 return;
             }
 
-            Optional<Document> document = documentDao.findDocumentById(documentId);
+            Optional<Document> document = documentDao.findDocumentById(documentId, user.getId());
 
             if(!document.isPresent())
             {
@@ -62,19 +64,19 @@ public class MoveController extends HttpServlet
                 return;
             }
 
-            if(documentDao.exists(document.get().getName(), directoryId))
+            if(documentDao.exists(document.get().getName(), directoryId, user.getId()))
             {
                 resp.sendError(409, "Document with name "+document.get().getName()+" already exists in this directory!");
                 return;
             }
 
-            if(!documentDao.moveDocument(documentId, directoryId))
+            if(!documentDao.moveDocument(documentId, directoryId, user.getId()))
             {
                 resp.sendError(500, "Error while moving document!");
                 return;
             }
 
-            resp.sendRedirect("/documents?dir="+directoryId);
+            resp.setStatus(200);
 
         }
         catch (NumberFormatException e)

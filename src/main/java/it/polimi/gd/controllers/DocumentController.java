@@ -1,12 +1,14 @@
 package it.polimi.gd.controllers;
 
-import it.polimi.gd.Application;
 import it.polimi.gd.beans.Directory;
 import it.polimi.gd.beans.Document;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
-import org.thymeleaf.context.WebContext;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,9 +43,10 @@ public class DocumentController extends HttpServlet
     {
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int directoryId = Integer.parseInt(req.getParameter("dir"));
 
-            Optional<Directory> directory = directoryDao.findDirectoryById(directoryId);
+            Optional<Directory> directory = directoryDao.findDirectoryById(directoryId, user.getId());
 
             if(!directory.isPresent())
             {
@@ -51,14 +54,14 @@ public class DocumentController extends HttpServlet
                 return;
             }
 
-            List<Document> documents = documentDao.findDocumentsByParentId(directoryId);
+            List<Document> documents = documentDao.findDocumentsByParentId(directoryId, user.getId());
 
-            WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
-
-            webContext.setVariable("dir", directory.get());
-            webContext.setVariable("documents", documents);
-
-            Application.getTemplateEngine().process("documents", webContext, resp.getWriter());
+            try (JsonGenerator generator = Json.createGenerator(resp.getWriter()))
+            {
+                JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                documents.forEach(document -> arrayBuilder.add(document.toJson()));
+                generator.write(arrayBuilder.build());
+            }
         }
         catch (NumberFormatException e)
         {

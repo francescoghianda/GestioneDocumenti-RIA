@@ -4,6 +4,7 @@ import it.polimi.gd.exceptions.ApplicationInitializationException;
 
 import javax.servlet.ServletContext;
 import java.io.*;
+import java.nio.file.Files;
 
 public class FileManager
 {
@@ -29,22 +30,34 @@ public class FileManager
         return instance;
     }
 
-    public FileInputStream getFileInputStream(int documentId) throws FileNotFoundException
+    public FileInputStream getFileInputStream(int documentId, int owner) throws FileNotFoundException
     {
-        File documentFile = new File(rootDirectoryPath+File.separator+documentId);
+        File documentFile = new File(rootDirectoryPath+File.separator+getUserFolderName(owner)+File.separator+documentId);
         return new FileInputStream(documentFile);
     }
 
-    public FileOutputStream getFileOutputStream(int documentId) throws IOException
+    public FileOutputStream getFileOutputStream(int documentId, int owner) throws IOException
     {
-        File documentFile = new File(rootDirectoryPath+File.separator+documentId);
+        File documentFile = new File(rootDirectoryPath+File.separator+getUserFolderName(owner)+File.separator+documentId);
+        if(!documentFile.getParentFile().exists() && !documentFile.getParentFile().mkdir())return null;
         if(!documentFile.createNewFile())return null;
         return new FileOutputStream(documentFile);
     }
 
-    public boolean fileExists(int documentId)
+    public boolean deleteFile(int documentId, int owner)
     {
-        File documentFile = new File(rootDirectoryPath+File.separator+documentId);
+        File documentFile = new File(rootDirectoryPath+File.separator+getUserFolderName(owner)+File.separator+documentId);
+        return documentFile.exists() && documentFile.delete();
+    }
+
+    public boolean fileExists(int documentId, int owner)
+    {
+        File documentFile = new File(rootDirectoryPath+File.separator+getUserFolderName(owner)+File.separator+documentId);
         return documentFile.exists() && !documentFile.isDirectory();
+    }
+
+    private String getUserFolderName(int userId)
+    {
+        return "user-"+userId;
     }
 }

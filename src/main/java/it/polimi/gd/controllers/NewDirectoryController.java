@@ -1,10 +1,13 @@
 package it.polimi.gd.controllers;
 
-import it.polimi.gd.Application;
 import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DirectoryDao;
-import org.thymeleaf.context.WebContext;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.stream.JsonGenerator;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @WebServlet("/new-directory")
+@MultipartConfig
 public class NewDirectoryController extends HttpServlet
 {
     private DirectoryDao directoryDao;
@@ -33,27 +37,11 @@ public class NewDirectoryController extends HttpServlet
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
-    {
-        try
-        {
-            int parentId = Integer.parseInt(req.getParameter("parent"));
-            WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
-            webContext.setVariable("parentId", parentId);
-            webContext.setVariable("maxNameLen", maxDirectoryNameLength);
-            Application.getTemplateEngine().process("new-directory", webContext, resp.getWriter());
-        }
-        catch (NumberFormatException e)
-        {
-            resp.sendError(400, e.getLocalizedMessage());
-        }
-    }
-
-    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int parentId = Integer.parseInt(req.getParameter("parent"));
             String name = Objects.toString(req.getParameter("name"), "");
 
@@ -65,7 +53,7 @@ public class NewDirectoryController extends HttpServlet
 
             if(parentId != 0)
             {
-                Optional<Directory> parentDir = directoryDao.findDirectoryById(parentId);
+                Optional<Directory> parentDir = directoryDao.findDirectoryById(parentId, user.getId());
 
                 if(!parentDir.isPresent())
                 {
@@ -80,17 +68,36 @@ public class NewDirectoryController extends HttpServlet
                 }
             }
 
-            if(!directoryDao.createDirectory(name, parentId))
+            Optional<Directory> directory = directoryDao.findDirectory(name, parentId, user.getId());
+
+            if(directory.isPresent())
             {
                 resp.sendError(409, "The directory named "+name+" already exists!");
                 return;
             }
 
-            resp.sendRedirect("/");
+            int directoryId = directoryDao.createDirectory(name, parentId, user.getId());
+
+            if(directoryId < 0)
+            {
+                resp.sendError(500, "Error creating new folder!");
+                return;
+            }
+
+            try(JsonGenerator generator = Json.createGenerator(resp.getWriter()))
+            {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                objectBuilder.add("id", directoryId);
+                objectBuilder.add("parentId", parentId);
+                objectBuilder.add("name", name);
+                generator.write(objectBuilder.build());
+            }
+
+
         }
         catch (NumberFormatException e)
         {
-            resp.sendError(400, e.getLocalizedMessage());
+            resp.sendError(400, "Id must be a number!");
         }
         catch (SQLException e)
         {

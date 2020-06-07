@@ -1,19 +1,25 @@
 package it.polimi.gd.beans;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 
-public class Document
+public class Document implements Bean
 {
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     private int id;
     private String name;
     private Date creationDate;
     private String summary;
     private String type;
     private int parentId;
+    private int owner;
 
     public Document() {}
 
-    public Document(int id, String name, Date creationDate, String summary, String type, int parentId)
+    public Document(int id, String name, Date creationDate, String summary, String type, int parentId, int owner)
     {
         this.id = id;
         this.name = name;
@@ -21,6 +27,7 @@ public class Document
         this.summary = summary;
         this.type = type;
         this.parentId = parentId;
+        this.owner = owner;
     }
 
     public int getId()
@@ -81,5 +88,29 @@ public class Document
     public void setParentId(int parentId)
     {
         this.parentId = parentId;
+    }
+
+    public int getOwner()
+    {
+        return owner;
+    }
+
+    public void setOwner(int owner)
+    {
+        this.owner = owner;
+    }
+
+    @Override
+    public JsonObjectBuilder toJson()
+    {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        objectBuilder.add("id", id);
+        objectBuilder.add("name", name);
+        objectBuilder.add("creationDate", dateFormat.format(creationDate));
+        objectBuilder.add("summary", summary == null ? "" : summary);
+        objectBuilder.add("type", type);
+        objectBuilder.add("parentId", parentId);
+        objectBuilder.add("owner", owner);
+        return objectBuilder;
     }
 }

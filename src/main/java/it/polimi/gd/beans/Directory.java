@@ -1,22 +1,29 @@
 package it.polimi.gd.beans;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 
-public class Directory
+public class Directory implements Bean
 {
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     private int id;
     private String name;
     private Date creationDate;
     private int parentId;
+    private int owner;
 
     public Directory() {}
 
-    public Directory(int id, String name, Date creationDate, int parentId)
+    public Directory(int id, String name, Date creationDate, int parentId, int owner)
     {
         this.id = id;
         this.name = name;
         this.creationDate = creationDate;
         this.parentId = parentId;
+        this.owner = owner;
     }
 
     public int getId()
@@ -57,5 +64,27 @@ public class Directory
     public void setParentId(int parentId)
     {
         this.parentId = parentId;
+    }
+
+    public int getOwner()
+    {
+        return owner;
+    }
+
+    public void setOwner(int owner)
+    {
+        this.owner = owner;
+    }
+
+    @Override
+    public JsonObjectBuilder toJson()
+    {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        objectBuilder.add("id", id);
+        objectBuilder.add("name", name);
+        objectBuilder.add("creationDate", dateFormat.format(creationDate));
+        objectBuilder.add("parentId", parentId);
+        objectBuilder.add("owner", owner);
+        return objectBuilder;
     }
 }

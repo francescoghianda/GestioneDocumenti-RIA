@@ -1,6 +1,7 @@
 package it.polimi.gd.controllers;
 
 import it.polimi.gd.beans.Document;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DocumentDao;
 import it.polimi.utils.file.FileManager;
 
@@ -37,9 +38,10 @@ public class DownloadDocumentController extends HttpServlet
     {
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int documentId = Integer.parseInt(req.getParameter("doc"));
-            Document document = documentDao.findDocumentById(documentId).orElseThrow(FileNotFoundException::new);
-            FileInputStream inputStream = fileManager.getFileInputStream(documentId);
+            Document document = documentDao.findDocumentById(documentId, user.getId()).orElseThrow(FileNotFoundException::new);
+            FileInputStream inputStream = fileManager.getFileInputStream(documentId, user.getId());
             ServletOutputStream outputStream = resp.getOutputStream();
 
             String format = document.getType().equals("UNKNOWN") ? "" : "."+document.getType().toLowerCase();

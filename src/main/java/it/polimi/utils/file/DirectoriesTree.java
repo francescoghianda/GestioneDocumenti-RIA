@@ -12,7 +12,7 @@ public class DirectoriesTree extends Tree<Directory>
 
     private DirectoriesTree()
     {
-        super(new Directory(0, "/", null, 0));
+        super(new Directory(0, "/", null, 0, 0));
     }
 
     public static DirectoriesTree build(List<Directory> directories)

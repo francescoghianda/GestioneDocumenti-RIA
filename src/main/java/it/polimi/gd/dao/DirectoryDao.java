@@ -1,6 +1,10 @@
 package it.polimi.gd.dao;
 
+import com.mysql.cj.xdevapi.ClientImpl;
+import it.polimi.gd.Application;
 import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.Document;
+import it.polimi.utils.file.FileManager;
 import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
@@ -28,34 +32,41 @@ public class DirectoryDao
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getDate("creation_date"),
-                resultSet.getInt("parent"));
+                resultSet.getInt("parent"),
+                resultSet.getInt("owner"));
     }
 
-    public List<Directory> findAll() throws SQLException
+    public List<Directory> findAll(int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM directory");
-            ResultSet resultSet = statement.executeQuery())
+                    "SELECT * FROM directory WHERE owner = ?");
+            )
         {
-            List<Directory> directories = new ArrayList<>();
-            while (resultSet.next())directories.add(metadataFromResultSet(resultSet));
-            return directories;
+            statement.setInt(1, owner);
+            try(ResultSet resultSet = statement.executeQuery())
+            {
+                List<Directory> directories = new ArrayList<>();
+                while (resultSet.next())directories.add(metadataFromResultSet(resultSet));
+                return directories;
+            }
+
         }
     }
 
-    public List<Directory> findRootDirectories() throws SQLException
+    public List<Directory> findRootDirectories(int owner) throws SQLException
     {
-        return findDirectoriesByParentId(0);
+        return findDirectoriesByParentId(0, owner);
     }
 
-    public List<Directory> findDirectoriesByParentId(int parentId) throws SQLException
+    public List<Directory> findDirectoriesByParentId(int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM directory dir WHERE dir.parent = ?"))
+                    "SELECT * FROM directory dir WHERE dir.parent = ? AND dir.owner = ?"))
         {
             statement.setInt(1, parentId);
+            statement.setInt(2, owner);
 
             try(ResultSet resultSet = statement.executeQuery())
             {
@@ -67,13 +78,14 @@ public class DirectoryDao
         }
     }
 
-    public Optional<Directory> findDirectoryById(int id) throws SQLException
+    public Optional<Directory> findDirectoryById(int id, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM directory dir WHERE dir.id = ?"))
+                    "SELECT * FROM directory dir WHERE dir.id = ? AND dir.owner = ?"))
         {
             statement.setInt(1, id);
+            statement.setInt(2, owner);
             try(ResultSet resultSet = statement.executeQuery())
             {
                 if(!resultSet.next()) return Optional.empty();
@@ -82,14 +94,15 @@ public class DirectoryDao
         }
     }
 
-    public Optional<Directory> findDirectory(String directoryName, int parentId) throws SQLException
+    public Optional<Directory> findDirectory(String directoryName, int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM directory dir WHERE dir.name = ? AND dir.parent = ?"))
+                    "SELECT * FROM directory dir WHERE dir.name = ? AND dir.parent = ? AND dir.owner = ?"))
         {
             statement.setString(1, directoryName);
             statement.setInt(2, parentId);
+            statement.setInt(3, owner);
 
             try(ResultSet resultSet = statement.executeQuery())
             {
@@ -99,32 +112,59 @@ public class DirectoryDao
         }
     }
 
-    public boolean createDirectory(String directoryName, int parentId) throws SQLException
+    public int createDirectory(String directoryName, int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "INSERT INTO directory (name, creation_date, parent) VALUES (?, ?, ?)"))
+                    "INSERT INTO directory (name, creation_date, parent, owner) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
         {
             statement.setString(1, directoryName);
             statement.setString(2, dateFormat.format(new Date()));
             statement.setInt(3, parentId);
+            statement.setInt(4, owner);
 
-            System.out.println(statement.toString());
+            if(statement.executeUpdate() != 1) return -1;
 
-            return statement.executeUpdate() == 1;
+            try(ResultSet resultSet = statement.getGeneratedKeys())
+            {
+                if(!resultSet.next()) return -1;
+                return resultSet.getInt(1);
+            }
         }
     }
 
-    public boolean deleteDirectory(String directoryName, int parentId) throws SQLException
+    public boolean deleteDirectory(int id, int owner) throws SQLException
     {
+        List<Directory> subDirectories = findDirectoriesByParentId(id, owner);
+
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "DELETE FROM directory dir WHERE dir.name = ? AND dir.parent = ?"))
+                    "DELETE FROM directory dir WHERE (dir.id = ? AND dir.owner = ?) OR (dir.parent = ? AND dir.owner = ?)"))
         {
-            statement.setString(1, directoryName);
-            statement.setInt(2, parentId);
-            return statement.executeUpdate() == 1;
+            if(!deleteDocumentsInFolder(connection.getConnection(), id, owner))return false;
+            for(Directory directory : subDirectories)
+                if(!deleteDocumentsInFolder(connection.getConnection(), directory.getId(), owner)) return false;
+
+            statement.setInt(1, id);
+            statement.setInt(2, owner);
+            statement.setInt(3, id);
+            statement.setInt(4, owner);
+
+            return statement.executeUpdate() > 0;
         }
+    }
+
+    private boolean deleteDocumentsInFolder(Connection connection, int folderId, int owner) throws SQLException
+    {
+        DocumentDao documentDao = new DocumentDao();
+        List<Document> documents = documentDao.findDocumentsByParentId(folderId, owner);
+        if(documents.isEmpty())return true;
+
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM document WHERE parent = ? and owner = ?");
+        statement.setInt(1, folderId);
+        statement.setInt(2, owner);
+        Optional<Boolean> documentsDeleted = documents.stream().map(document -> FileManager.getInstance(Application.getServletContext()).deleteFile(document.getId(), owner)).reduce((b1, b2) -> b1 && b2);
+        return statement.executeUpdate() >= 0 && documentsDeleted.orElse(false);
     }
 
 }

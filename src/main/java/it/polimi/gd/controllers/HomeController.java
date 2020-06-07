@@ -4,12 +4,12 @@ import it.polimi.gd.Application;
 
 import it.polimi.gd.beans.Directory;
 import it.polimi.gd.beans.Document;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 import it.polimi.utils.file.DirectoriesTree;
 import org.thymeleaf.context.WebContext;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,23 +33,24 @@ public class HomeController extends HttpServlet
     }
 
     @Override
-    public void init() throws ServletException
+    public void init()
     {
         directoryDao = new DirectoryDao();
         documentDao = new DocumentDao();
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
 
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int documentId = Integer.parseInt(Objects.toString(req.getParameter("move-doc"), "0"));
             boolean moveDocument = documentId != 0;
 
-            Optional<Document> document = moveDocument ? documentDao.findDocumentById(documentId) : Optional.empty();
+            Optional<Document> document = moveDocument ? documentDao.findDocumentById(documentId, user.getId()) : Optional.empty();
 
             if(moveDocument && !document.isPresent())
             {
@@ -57,7 +58,7 @@ public class HomeController extends HttpServlet
                 return;
             }
 
-            List<Directory> directories = directoryDao.findAll();
+            List<Directory> directories = directoryDao.findAll(user.getId());
 
             DirectoriesTree directoriesTree = DirectoriesTree.build(directories);
 

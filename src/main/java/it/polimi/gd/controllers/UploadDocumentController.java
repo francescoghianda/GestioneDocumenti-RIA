@@ -1,11 +1,10 @@
 package it.polimi.gd.controllers;
 
-import it.polimi.gd.Application;
 import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 import it.polimi.utils.file.FileManager;
-import org.thymeleaf.context.WebContext;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -48,7 +47,7 @@ public class UploadDocumentController extends HttpServlet
         maxDocumentSummaryLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentSummaryLength"));
     }
 
-    @Override
+    /*@Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         try
@@ -65,14 +64,14 @@ public class UploadDocumentController extends HttpServlet
         {
             resp.sendError(400, e.getLocalizedMessage());
         }
-    }
+    }*/
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
-
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int parentId = Integer.parseInt(req.getParameter("parent"));
             String name = Objects.toString(req.getParameter("name"), "");
             String summary = req.getParameter("summary");
@@ -83,7 +82,7 @@ public class UploadDocumentController extends HttpServlet
                 return;
             }
 
-            Optional<Directory> directory = directoryDao.findDirectoryById(parentId);
+            Optional<Directory> directory = directoryDao.findDirectoryById(parentId, user.getId());
 
             if(!directory.isPresent())
             {
@@ -115,18 +114,18 @@ public class UploadDocumentController extends HttpServlet
 
             int documentId;
 
-            if((documentId = documentDao.createDocument(name, summary.isEmpty() ? null : summary, documentType, parentId)) <= 0)
+            if((documentId = documentDao.createDocument(name, summary.isEmpty() ? null : summary, documentType, parentId, user.getId())) <= 0)
             {
                 resp.sendError(409, "Document already exists!");
                 return;
             }
 
-            FileOutputStream outputStream = fileManager.getFileOutputStream(documentId);
+            FileOutputStream outputStream = fileManager.getFileOutputStream(documentId, user.getId());
 
             if(outputStream == null)
             {
                 resp.sendError(500, "Error uploading file!");
-                documentDao.deleteDocument(documentId);
+                documentDao.deleteDocument(documentId, user.getId());
                 return;
             }
 
@@ -140,7 +139,7 @@ public class UploadDocumentController extends HttpServlet
             outputStream.flush();
             outputStream.close();
 
-            resp.sendRedirect("/documents?dir="+parentId);
+            resp.setStatus(200);
 
         }
         catch (NumberFormatException e)

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+
+    <link rel="stylesheet" href="../../assets/css/main.css" th:href="@{/assets/css/main.css}">
+    <script src="../../assets/js/jquery-3.5.1.min.js" th:src="@{/assets/js/jquery-3.5.1.min.js}"></script>
+    <script src="../../assets/js/main.js" th:src="@{/assets/js/main.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span>Accedi per visualizzare i documenti</span>
+            <div class="right-buttons">
+                <a class="button" href="./register.html" th:href="@{/register}">nuovo utente</a>
+            </div>
+        </header>
+        <form action="/login" method="post">
+            <label for="input-username">Nome utente:</label>
+            <input id="input-username" type="text" name="username" th:maxlength="${maxUsernameLen}" required>
+            <label for="input-password">Password:</label>
+            <input id="input-password" type="password" name="password" th:minlength="${minPasswordLen}" required>
+            <input type="submit" value="Accedi">
+        </form>
+    </div>
+</body>
+</html>

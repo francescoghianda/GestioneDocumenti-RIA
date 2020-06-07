@@ -3,8 +3,12 @@
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-  <display-name>Gestione Documenti</display-name>
+  <display-name>Gestione Documenti RIA</display-name>
 
+  <filter-mapping>
+    <filter-name>LoginFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
 
   <context-param>
     <param-name>dbUrl</param-name>
@@ -38,5 +42,13 @@
   <context-param>
     <param-name>maxDocumentSummaryLength</param-name>
     <param-value>500</param-value>
+  </context-param>
+  <context-param>
+    <param-name>maxUsernameLength</param-name>
+    <param-value>50</param-value>
+  </context-param>
+  <context-param>
+    <param-name>minPasswordLength</param-name>
+    <param-value>6</param-value>
   </context-param>
 </web-app>

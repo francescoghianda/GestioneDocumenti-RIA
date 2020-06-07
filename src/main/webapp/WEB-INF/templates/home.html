@@ -5,32 +5,8 @@
     <title>Home Page</title>
 
     <link rel="stylesheet" href="../../assets/css/main.css" th:href="@{/assets/css/main.css}">
+    <script src="../../assets/js/main.js" th:src="@{/assets/js/main.js}"></script>
 
-
-    <script>
-
-        window.onload = function () {
-
-            Array.from(document.getElementsByClassName('open-folder-btn')).forEach(button =>
-            {
-               button.onclick = function () {
-                   button.closest('.item').querySelector('.sub-list').classList.remove('hidden');
-                   button.style.display = "none";
-                   button.nextElementSibling.removeAttribute('style');
-               }
-            });
-
-            Array.from(document.getElementsByClassName('close-folder-btn')).forEach(button =>
-            {
-                button.onclick = function () {
-                    button.closest('.item').querySelector('.sub-list').classList.add('hidden');
-                    button.style.display = "none";
-                    button.previousElementSibling.removeAttribute('style');
-                }
-            });
-        }
-
-    </script>
 
 </head>
 <body>
@@ -40,41 +16,137 @@
             <span th:if="${moveDocument}" th:text="'Stai spostando il documento '+${doc.name}+' dalla sottocartella '+${subDirectory.name}"></span>
             <span th:unless="${moveDocument}">I tuoi file</span>
             <div class="right-buttons">
-                <a title="Crea nuova cartella" class="button" th:href="@{/new-directory(parent='0')}">
+                <button title="Crea nuova cartella" class="icon-button new-folder-button root">
                     <img class="btn-icon" src="../../assets/images/create_new_folder-24px.svg" th:src="@{/assets/images/create_new_folder-24px.svg}">
-                </a>
+                </button>
+                <a class="button" href="/logout">logout</a>
             </div>
         </header>
-        <ul class="list">
-            <li class="item" th:each="dirNode : ${tree.root.getChildren()}">
+
+        <ul id="root-list" class="list"> <!-- ROOT FOLDER LIST -->
+
+            <li class="item" id="trashcan"> <!-- TRASH CAN -->
                 <div class="item-content">
+                    <img class="item-icon" src="../../assets/images/delete-24px.svg" th:src="@{/assets/images/delete-24px.svg}">
+                    <span class="item-text">Cestino</span>
+                    <div class="right-buttons">
+
+                    </div>
+                </div>
+            </li>
+
+            <li class="item" th:each="dirNode : ${tree.root.getChildren()}" th:data-folder-id="${dirNode.value.id}" th:data-parent-id="0" th:id="'folder-'+${dirNode.value.id}"> <!-- ROOT FOLDERS -->
+
+                <div class="item-content" draggable="true" data-folder>
                     <img class="item-icon" src="../../assets/images/folder-24px.svg" th:src="@{/assets/images/folder-24px.svg}">
                     <span class="item-text" th:text="${dirNode.value.name}">Directory 1</span>
                     <div class="right-buttons">
                         <button class="button open-folder-btn">apri</button>
                         <button class="button close-folder-btn" style="display: none">chiudi</button>
-                        <a title="Crea nuova cartella" class="button" th:href="@{/new-directory(parent=${dirNode.value.id})}">
+                        <button title="Crea nuova cartella" class="icon-button new-folder-button">
                             <img class="btn-icon" src="../../assets/images/create_new_folder-24px.svg" th:src="@{/assets/images/create_new_folder-24px.svg}">
-                        </a>
+                        </button>
                     </div>
                 </div>
-                <ul class="sub-list hidden">
-                    <li class="sub-item" th:class="${moveDocument && dir.id == doc.parentId} ? 'sub-item disabled' : 'sub-item'" th:each="dir : ${dirNode.getChildrenValues()}">
-                        <div class="sub-item-content">
+
+                <ul class="list hidden"> <!-- SUB-FOLDER LIST -->
+
+                    <!-- SUB-FOLDERS -->
+                    <li class="item" th:data-id="${dir.id}" th:id="'folder-'+${dir.id}" data-doc-loaded="false" th:data-folder-id="${dir.id}" th:data-parent-id="${dir.parentId}" th:each="dir : ${dirNode.getChildrenValues()}">
+
+                        <div class="item-content second-level" draggable="true" data-sub-folder>
                             <img class="item-icon" src="../../assets/images/folder-24px.svg" th:src="@{/assets/images/folder-24px.svg}">
-                            <a class="item-text" href="#" th:text="${dir.name}" th:href="${moveDocument} ? (${dir.id == doc.parentId} ? '#' : @{/move(dir=${dir.id}, doc=${doc.id})}) : @{/documents(dir=${dir.id})}">Sub-dir 1</a>
+                            <span class="item-text" th:text="${dir.name}" th:href="${moveDocument} ? (${dir.id == doc.parentId} ? '#' : @{/move(dir=${dir.id}, doc=${doc.id})}) : @{/documents(dir=${dir.id})}">Sub-dir 1</span>
+                            <div class="right-buttons">
+                                <button class="button open-folder-btn">apri</button>
+                                <button class="button close-folder-btn" style="display: none">chiudi</button>
+                                <img class="loader hidden" src="../../assets/images/loader-24px.svg" th:src="@{/assets/images/loader-24px.svg}">
+                                <button title="Carica documento" class="icon-button">
+                                    <img class="btn-icon" src="../../assets/images/cloud_upload-24px.svg" th:src="@{/assets/images/cloud_upload-24px.svg}">
+                                </button>
+                            </div>
                         </div>
+
+                        <ul class="list document-list hidden"> <!-- DOCUMENT LIST -->
+
+                            <!--
+                                DOCUMENTS GENERATED BY JAVASCRIPT
+                            -->
+
+                            <li class="item hidden-item empty-folder-item">
+                                <div class="item-content third-level">
+                                    <a class="item-text">Cartella vuota</a>
+                                </div>
+                            </li>
+
+                        </ul>
+
                     </li>
-                    <li  class="sub-item"th:if="${dirNode.getChildrenValues().isEmpty()}">
-                        <div class="sub-item-content">
+                    <li  class="item hidden-item empty-folder-item" th:class="${dirNode.getChildrenValues().isEmpty()} ? 'item empty-folder-item' : 'item hidden-item empty-folder-item'">
+                        <div class="item-content second-level">
                             <a class="item-text">Cartella vuota</a>
                         </div>
                     </li>
                 </ul>
             </li>
         </ul>
+        <footer>
+            v. 1.0 - RIA
+        </footer>
     </div>
 
 
+    <div id="confirm-delete-modal" class="modal hidden">
+        <header>
+            <button class="icon-button close-btn">
+                <img src="../../assets/images/close-24px.svg" th:src="@{/assets/images/close-24px.svg}">
+            </button>
+            <span class="title">Conferma cancellazione</span>
+        </header>
+        <div class="content">
+            Il documento sar&agrave; elimitato definitivamente.
+        </div>
+        <footer>
+            <button class="cancel-btn" value="CANCEL">annulla</button>
+            <button class="okay-btn" value="OK">ok</button>
+        </footer>
+    </div>
+
+    <div id="error-modal" class="modal hidden">
+        <header data-color="red">
+            <img class="icon" src="../../assets/images/error_outline-24px.svg" th:src="@{/assets/images/error_outline-24px.svg}">
+            <span class="title">Si &egrave; verificato un errore</span>
+        </header>
+        <div class="content">
+
+        </div>
+        <footer>
+            <button class="okay-btn" value="OK">ok</button>
+        </footer>
+    </div>
+
+    <div id="new-folder-dialog" class="modal form-modal hidden">
+        <header>
+            <button class="icon-button close-btn">
+                <img src="../../assets/images/close-24px.svg" th:src="@{/assets/images/close-24px.svg}">
+            </button>
+            <span class="title">Crea una nuova cartella</span>
+        </header>
+        <div class="content">
+            <form action="/new-directory" method="post">
+                <div class="form-error-message" data-error-code="409">
+                    <span>Cartella gi&agrave; esistente.</span>
+                </div>
+                <input id="parent-id-input" type="hidden" name="parent">
+                <label for="folder-name-input">Nome cartella:</label>
+                <input id="folder-name-input" type="text" name="name" required>
+            </form>
+        </div>
+        <footer>
+            <button class="okay-btn" value="OK">ok</button>
+        </footer>
+    </div>
+
+    <div class="modalbg hidden"></div>
 </body>
 </html>

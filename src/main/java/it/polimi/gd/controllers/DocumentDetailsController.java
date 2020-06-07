@@ -1,11 +1,11 @@
 package it.polimi.gd.controllers;
 
-import it.polimi.gd.Application;
 import it.polimi.gd.beans.Document;
+import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DocumentDao;
-import org.thymeleaf.context.WebContext;
 
-import javax.servlet.ServletException;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,12 +31,13 @@ public class DocumentDetailsController extends HttpServlet
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         try
         {
+            User user = (User) req.getSession().getAttribute("user");
             int documentId = Integer.parseInt(req.getParameter("doc"));
-            Optional<Document> document = documentDao.findDocumentById(documentId);
+            Optional<Document> document = documentDao.findDocumentById(documentId, user.getId());
 
             if(!document.isPresent())
             {
@@ -44,9 +45,10 @@ public class DocumentDetailsController extends HttpServlet
                 return;
             }
 
-            WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
-            webContext.setVariable("doc", document.get());
-            Application.getTemplateEngine().process("document-details", webContext, resp.getWriter());
+            try (JsonGenerator generator = Json.createGenerator(resp.getWriter()))
+            {
+                generator.write(document.get().toJson().build());
+            }
         }
         catch (NumberFormatException e)
         {

@@ -1,7 +1,9 @@
 package it.polimi.gd.dao;
 
+import it.polimi.gd.Application;
 import it.polimi.gd.beans.Document;
 import it.polimi.gd.log.Log;
+import it.polimi.utils.file.FileManager;
 import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
@@ -31,16 +33,18 @@ public class DocumentDao
                 resultSet.getDate("creation_date"),
                 resultSet.getString("summary"),
                 resultSet.getString("type"),
-                resultSet.getInt("parent"));
+                resultSet.getInt("parent"),
+                resultSet.getInt("owner"));
     }
 
-    public Optional<Document> findDocumentById(int documentId) throws SQLException
+    public Optional<Document> findDocumentById(int documentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM document WHERE id = ?"))
+                    "SELECT * FROM document WHERE id = ? AND owner = ?"))
         {
             statement.setInt(1, documentId);
+            statement.setInt(2, owner);
 
             try(ResultSet resultSet = statement.executeQuery())
             {
@@ -50,13 +54,14 @@ public class DocumentDao
         }
     }
 
-    public List<Document> findDocumentsByParentId(int parentId) throws SQLException
+    public List<Document> findDocumentsByParentId(int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT * FROM document doc WHERE doc.parent = ?"))
+                    "SELECT * FROM document doc WHERE doc.parent = ? AND doc.owner = ?"))
         {
             statement.setInt(1, parentId);
+            statement.setInt(2, owner);
 
             try(ResultSet resultSet = statement.executeQuery())
             {
@@ -68,27 +73,29 @@ public class DocumentDao
         }
     }
 
-    public boolean moveDocument(int documentId, int destinationDirectoryId) throws SQLException
+    public boolean moveDocument(int documentId, int destinationDirectoryId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "UPDATE document SET parent = ? WHERE id = ?"))
+                    "UPDATE document SET parent = ? WHERE id = ? AND owner = ?"))
         {
             statement.setInt(1, destinationDirectoryId);
             statement.setInt(2, documentId);
+            statement.setInt(3, owner);
 
             return statement.executeUpdate() == 1;
         }
     }
 
-    public boolean exists(String documentName, int parentId) throws SQLException
+    public boolean exists(String documentName, int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "SELECT id FROM document doc WHERE doc.name = ? AND doc.parent = ?"))
+                    "SELECT id FROM document doc WHERE doc.name = ? AND doc.parent = ? AND doc.owner = ?"))
         {
             statement.setString(1, documentName);
             statement.setInt(2, parentId);
+            statement.setInt(3, owner);
 
             try(ResultSet resultSet = statement.executeQuery())
             {
@@ -97,22 +104,21 @@ public class DocumentDao
         }
     }
 
-    public int createDocument(String documentName, String summary, String documentType, int parentId) throws SQLException
+    public int createDocument(String documentName, String summary, String documentType, int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "INSERT INTO document (name, creation_date, summary, type, parent) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
+                    "INSERT INTO document (name, creation_date, summary, type, parent, owner) VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
         {
 
             String date = dateFormat.format(new Date());
-
-            Log.info(date);
 
             statement.setString(1, documentName);
             statement.setString(2, date);
             statement.setString(3, summary);
             statement.setString(4, documentType);
             statement.setInt(5, parentId);
+            statement.setInt(6, owner);
 
             connection.getConnection().setAutoCommit(false);
 
@@ -133,14 +139,15 @@ public class DocumentDao
 
     }
 
-    public boolean deleteDocument(int documentId) throws SQLException
+    public boolean deleteDocument(int documentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "DELETE FROM document doc WHERE doc.id = ?"))
+                    "DELETE FROM document doc WHERE doc.id = ? AND doc.owner = ?"))
         {
             statement.setInt(1, documentId);
-            return statement.executeUpdate() == 1;
+            statement.setInt(2, owner);
+            return statement.executeUpdate() == 1 && FileManager.getInstance(Application.getServletContext()).deleteFile(documentId, owner);
         }
     }
 
