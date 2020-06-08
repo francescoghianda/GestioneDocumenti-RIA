@@ -3,6 +3,7 @@ package it.polimi.gd.beans;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public class Document implements Bean
@@ -19,11 +20,11 @@ public class Document implements Bean
 
     public Document() {}
 
-    public Document(int id, String name, Date creationDate, String summary, String type, int parentId, int owner)
+    public Document(int id, String name, Timestamp creationDate, String summary, String type, int parentId, int owner)
     {
         this.id = id;
         this.name = name;
-        this.creationDate = creationDate;
+        this.creationDate = new Date(creationDate.getTime());
         this.summary = summary;
         this.type = type;
         this.parentId = parentId;

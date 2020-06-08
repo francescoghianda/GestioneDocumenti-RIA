@@ -138,8 +138,48 @@
                     <span>Cartella gi&agrave; esistente.</span>
                 </div>
                 <input id="parent-id-input" type="hidden" name="parent">
-                <label for="folder-name-input">Nome cartella:</label>
-                <input id="folder-name-input" type="text" name="name" required>
+                <div class="input-container">
+                    <label for="folder-name-input">Nome cartella:</label>
+                    <input id="folder-name-input" type="text" name="name" th:maxlength="${maxDirectoryNameLen}" required>
+                </div>
+            </form>
+        </div>
+        <footer>
+            <button class="okay-btn" value="OK">ok</button>
+        </footer>
+    </div>
+
+    <div id="upload-document-dialog" class="modal form-modal hidden">
+        <header>
+            <button class="icon-button close-btn">
+                <img src="../../assets/images/close-24px.svg" th:src="@{/assets/images/close-24px.svg}">
+            </button>
+            <span class="title">Carica un documento</span>
+        </header>
+        <div class="content">
+            <form action="/upload" method="post">
+                <div class="form-error-message" data-error-code="409">
+                    <span>Documento gi&agrave; esistente.</span>
+                </div>
+                <div class="form-error-message" data-error-code="400">
+                    <span>Nome non valido.</span>
+                </div>
+                <div class="form-error-message" data-error-code="500">
+                    <span>Errore durante il caricamento del documento.</span>
+                </div>
+                <input id="doc-parent-id-input" type="hidden" name="parent">
+                <div class="input-container">
+                    <label for="document-name-input">Nome documento:</label>
+                    <input id="document-name-input" type="text" name="name" th:maxlength="${maxDocumentNameLen}" required>
+                </div>
+                <div class="input-container">
+                    <label for="document-summary-input">Sommario:</label>
+                    <textarea id="document-summary-input" name="summary" th:maxlength="${maxDocumentSummaryLen}"></textarea>
+                </div>
+                <div class="input-container">
+                    <label for="document-file-input">Seleziona un file:</label>
+                    <input class="back-label" id="document-file-input" type="file" name="document" required>
+                </div>
             </form>
         </div>
         <footer>

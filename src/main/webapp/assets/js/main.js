@@ -18,6 +18,10 @@ window.onload = function () {
     errorModal = new Modal(document.getElementById('error-modal'));
     newDirModal = new Modal(document.getElementById('new-folder-dialog'));
 
+    let uploadDocumentModal = new Modal(document.getElementById('upload-document-dialog'));
+
+    uploadDocumentModal.show();
+
     confirmDeleteModal.addEventListener('close', function (e) {
         if(e.detail.modalResult === 'OK') {
             let request = new XMLHttpRequest();
@@ -424,7 +428,7 @@ function fetchDocuments(folderId, callback, errorCallback) {
 function Modal(modalElement) {
     let self = this;
     this.data = null;
-    let form = modalElement ? modalElement.querySelector('.content form') : null;
+    let form = modalElement ? new Form(modalElement.querySelector('.content form')) : null;
 
     this.show = function (data) {
         self.data = data;
@@ -442,7 +446,7 @@ function Modal(modalElement) {
         if(modalElement.classList.contains('form-modal') && form && result.toLowerCase() === 'ok')
         {
             if(!form.checkValidity())return;
-            submitForm(form, response =>
+            form.submit(response =>
             {
                 let event = new CustomEvent('close', {
                     detail: {
@@ -453,7 +457,6 @@ function Modal(modalElement) {
                 modalElement.dispatchEvent(event);
                 if(event.defaultPrevented)return;
                 form.reset();
-                Array.from(form.querySelectorAll('.form-error-message')).forEach(elem => elem.classList.remove('show'));
                 document.querySelector('.modalbg').classList.add('hidden');
                 modalElement.classList.add('hidden');
             }, errorResponse =>
@@ -473,7 +476,6 @@ function Modal(modalElement) {
             if(modalElement.classList.contains('form-modal') && form)
             {
                 form.reset();
-                Array.from(form.querySelectorAll('.form-error-message')).forEach(elem => elem.classList.remove('show'));
             }
             document.querySelector('.modalbg').classList.add('hidden');
             modalElement.classList.add('hidden');
@@ -483,7 +485,7 @@ function Modal(modalElement) {
     this.setFormValue = function (elementId, value) {
         if(form)
         {
-            let element = form.querySelector(`#${elementId}`);
+            let element = form.formElement.querySelector(`#${elementId}`);
             if(element)element.value = value;
         }
     }
@@ -504,9 +506,8 @@ function Modal(modalElement) {
     if(modalElement) Array.from(modalElement.querySelectorAll('footer > button')).forEach(btn => btn.addEventListener('click',  (e) => self.close(e.target.value)));
 }
 
-function submitForm(form, callback, errorCallback)
+/*function submitForm(form, callback, errorCallback)
 {
-
     let action = form.getAttribute('action');
     let method = form.getAttribute('method');
 
@@ -532,6 +533,85 @@ function submitForm(form, callback, errorCallback)
 
     if(method.toLowerCase() === 'get')request.send();
     else request.send(new FormData(form));
+}*/
+
+
+function Form(form)
+{
+    if(!form)return null;
+    this.formElement = form;
+
+    this.submit = function submitForm(callback, errorCallback)
+    {
+        let action = form.getAttribute('action');
+        let method = form.getAttribute('method');
+
+        let request = new XMLHttpRequest();
+        request.open(method, action);
+
+        request.onreadystatechange = function () {
+            if(request.readyState === XMLHttpRequest.DONE)
+            {
+                if(request.status < 400)
+                {
+                    Array.from(form.querySelectorAll('.form-error-message')).forEach(elem => elem.classList.remove('show'));
+                    callback(request);
+                }
+                else
+                {
+                    let errorMessage = form.querySelector(`.form-error-message[data-error-code="${request.status}"]`);
+                    if(errorMessage)errorMessage.classList.add('show');
+                    errorCallback(request);
+                }
+            }
+        };
+
+        if(method.toLowerCase() === 'get')request.send();
+        else request.send(new FormData(form));
+    }
+
+    this.reset = function () {
+        form.reset();
+        Array.from(form.querySelectorAll('.form-error-message')).forEach(elem => elem.classList.remove('show'));
+    }
+
+    this.checkValidity = function checkFormValidity()
+    {
+        let valid = true;
+        Array.from(form.querySelectorAll('input, textarea, select')).forEach(formElement =>
+        {
+            if(!checkElementValidity(formElement))valid = false;
+        });
+        return valid;
+    }
+
+    function checkElementValidity(formElement) {
+        if(formElement.checkValidity())
+        {
+            let container = formElement.closest('.input-container');
+            if(container)
+            {
+                container.classList.remove('invalid');
+                container.removeAttribute('data-validity-message');
+            }
+            return true;
+        }
+        else
+        {
+            let container = formElement.closest('.input-container');
+            if(container)
+            {
+                container.classList.add('invalid');
+                container.setAttribute('data-validity-message', formElement.validationMessage);
+            }
+            return false;
+        }
+    }
+
+    Array.from(form.querySelectorAll('input, textarea')).forEach(formElement =>
+    {
+       formElement.addEventListener('blur', e => checkElementValidity(e.currentTarget));
+    });
 }
 
 function ContextMenu()

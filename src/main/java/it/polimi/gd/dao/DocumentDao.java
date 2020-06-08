@@ -2,7 +2,6 @@ package it.polimi.gd.dao;
 
 import it.polimi.gd.Application;
 import it.polimi.gd.beans.Document;
-import it.polimi.gd.log.Log;
 import it.polimi.utils.file.FileManager;
 import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
@@ -30,7 +29,7 @@ public class DocumentDao
         return new Document(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
-                resultSet.getDate("creation_date"),
+                resultSet.getTimestamp("creation_date"),
                 resultSet.getString("summary"),
                 resultSet.getString("type"),
                 resultSet.getInt("parent"),

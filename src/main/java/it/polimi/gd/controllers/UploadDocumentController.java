@@ -6,6 +6,9 @@ import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
 import it.polimi.utils.file.FileManager;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -46,25 +49,6 @@ public class UploadDocumentController extends HttpServlet
         maxDocumentTypeLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentTypeLength"));
         maxDocumentSummaryLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentSummaryLength"));
     }
-
-    /*@Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
-    {
-        try
-        {
-            int parentId = Integer.parseInt(req.getParameter("parent"));
-
-            WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
-            webContext.setVariable("parentId", parentId);
-            webContext.setVariable("maxNameLen", maxDocumentNameLength);
-            webContext.setVariable("maxSummaryLen", maxDocumentSummaryLength);
-            Application.getTemplateEngine().process("upload-document", webContext, resp.getWriter());
-        }
-        catch (NumberFormatException e)
-        {
-            resp.sendError(400, e.getLocalizedMessage());
-        }
-    }*/
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
@@ -139,7 +123,14 @@ public class UploadDocumentController extends HttpServlet
             outputStream.flush();
             outputStream.close();
 
-            resp.setStatus(200);
+            try(JsonGenerator generator = Json.createGenerator(resp.getWriter()))
+            {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                objectBuilder.add("id", documentId);
+                objectBuilder.add("parentId", parentId);
+                objectBuilder.add("name", name);
+                generator.write(objectBuilder.build());
+            }
 
         }
         catch (NumberFormatException e)

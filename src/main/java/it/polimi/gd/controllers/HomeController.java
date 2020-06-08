@@ -27,6 +27,10 @@ public class HomeController extends HttpServlet
     private DirectoryDao directoryDao;
     private DocumentDao documentDao;
 
+    private int maxDocumentNameLength;
+    private int maxDocumentSummaryLength;
+    private int maxDirectoryNameLength;
+
     public HomeController()
     {
         super();
@@ -37,6 +41,10 @@ public class HomeController extends HttpServlet
     {
         directoryDao = new DirectoryDao();
         documentDao = new DocumentDao();
+
+        maxDocumentNameLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentNameLength"));
+        maxDocumentSummaryLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentSummaryLength"));
+        maxDirectoryNameLength = Integer.parseInt(getServletContext().getInitParameter("maxDirectoryNameLength"));
     }
 
     @Override
@@ -64,6 +72,9 @@ public class HomeController extends HttpServlet
 
             webContext.setVariable("tree", directoriesTree);
             webContext.setVariable("moveDocument", moveDocument);
+            webContext.setVariable("maxDocumentNameLen", maxDocumentNameLength);
+            webContext.setVariable("maxDocumentSummaryLen", maxDocumentSummaryLength);
+            webContext.setVariable("maxDirectoryNameLen", maxDirectoryNameLength);
 
             if(moveDocument)
             {

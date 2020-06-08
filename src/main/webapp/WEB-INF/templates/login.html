@@ -17,10 +17,14 @@
             </div>
         </header>
         <form action="/login" method="post">
-            <label for="input-username">Nome utente:</label>
-            <input id="input-username" type="text" name="username" th:maxlength="${maxUsernameLen}" required>
-            <label for="input-password">Password:</label>
-            <input id="input-password" type="password" name="password" th:minlength="${minPasswordLen}" required>
+            <div class="input-container">
+                <label for="input-username">Nome utente:</label>
+                <input id="input-username" type="text" name="username" th:maxlength="${maxUsernameLen}" required>
+            </div>
+            <div class="input-container">
+                <label for="input-password">Password:</label>
+                <input id="input-password" type="password" name="password" th:minlength="${minPasswordLen}" required>
+            </div>
             <input type="submit" value="Accedi">
         </form>
     </div>
