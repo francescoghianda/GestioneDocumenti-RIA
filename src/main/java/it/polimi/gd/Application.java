@@ -18,6 +18,8 @@ public class Application
     private static TemplateEngine templateEngine;
     private static ServletContextTemplateResolver templateResolver;
 
+    private static String version;
+
     private Application() {}
 
     public static void init(ServletContext context)
@@ -33,6 +35,8 @@ public class Application
         templateResolver.setSuffix(".html");
         templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
+
+        version = context.getInitParameter("version");
 
         try
         {
@@ -65,6 +69,11 @@ public class Application
     public static ServletContext getServletContext()
     {
         return context;
+    }
+
+    public static String getVersion()
+    {
+        return version;
     }
 
 }

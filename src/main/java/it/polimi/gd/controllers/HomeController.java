@@ -1,13 +1,7 @@
 package it.polimi.gd.controllers;
 
 import it.polimi.gd.Application;
-
-import it.polimi.gd.beans.Directory;
-import it.polimi.gd.beans.Document;
 import it.polimi.gd.beans.User;
-import it.polimi.gd.dao.DirectoryDao;
-import it.polimi.gd.dao.DocumentDao;
-import it.polimi.utils.file.DirectoriesTree;
 import org.thymeleaf.context.WebContext;
 
 import javax.servlet.annotation.WebServlet;
@@ -15,18 +9,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 
 @WebServlet("")
 public class HomeController extends HttpServlet
 {
-    private DirectoryDao directoryDao;
-    private DocumentDao documentDao;
-
     private int maxDocumentNameLength;
     private int maxDocumentSummaryLength;
     private int maxDirectoryNameLength;
@@ -39,9 +25,6 @@ public class HomeController extends HttpServlet
     @Override
     public void init()
     {
-        directoryDao = new DirectoryDao();
-        documentDao = new DocumentDao();
-
         maxDocumentNameLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentNameLength"));
         maxDocumentSummaryLength = Integer.parseInt(getServletContext().getInitParameter("maxDocumentSummaryLength"));
         maxDirectoryNameLength = Integer.parseInt(getServletContext().getInitParameter("maxDirectoryNameLength"));
@@ -52,42 +35,14 @@ public class HomeController extends HttpServlet
     {
         WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
 
-        try
-        {
-            User user = (User) req.getSession().getAttribute("user");
-            int documentId = Integer.parseInt(Objects.toString(req.getParameter("move-doc"), "0"));
-            boolean moveDocument = documentId != 0;
+        User user = (User) req.getSession().getAttribute("user");
 
-            Optional<Document> document = moveDocument ? documentDao.findDocumentById(documentId, user.getId()) : Optional.empty();
+        webContext.setVariable("version", Application.getVersion());
+        webContext.setVariable("user", user);
+        webContext.setVariable("maxDocumentNameLen", maxDocumentNameLength);
+        webContext.setVariable("maxDocumentSummaryLen", maxDocumentSummaryLength);
+        webContext.setVariable("maxDirectoryNameLen", maxDirectoryNameLength);
 
-            if(moveDocument && !document.isPresent())
-            {
-                resp.sendError(400, "Document not found!");
-                return;
-            }
-
-            List<Directory> directories = directoryDao.findAll(user.getId());
-
-            DirectoriesTree directoriesTree = DirectoriesTree.build(directories);
-
-            webContext.setVariable("tree", directoriesTree);
-            webContext.setVariable("moveDocument", moveDocument);
-            webContext.setVariable("maxDocumentNameLen", maxDocumentNameLength);
-            webContext.setVariable("maxDocumentSummaryLen", maxDocumentSummaryLength);
-            webContext.setVariable("maxDirectoryNameLen", maxDirectoryNameLength);
-
-            if(moveDocument)
-            {
-                webContext.setVariable("doc", document.orElse(null));
-                webContext.setVariable("subDirectory", directoriesTree.findFirst(dir -> dir.getId() == document.get().getParentId()).get().getValue());
-            }
-
-            Application.getTemplateEngine().process("home", webContext, resp.getWriter());
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-            resp.sendError(500, "SQL error!");
-        }
+        Application.getTemplateEngine().process("home", webContext, resp.getWriter());
     }
 }

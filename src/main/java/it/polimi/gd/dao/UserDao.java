@@ -19,6 +19,21 @@ public class UserDao
         connectionPool = ConnectionPool.getInstance();
     }
 
+    public boolean usernameExists(String username) throws SQLException
+    {
+        try(PooledConnection connection = connectionPool.getConnection();
+            PreparedStatement statement = connection.getConnection().prepareStatement(
+                    "SELECT TRUE FROM user WHERE username = ?"))
+        {
+            statement.setString(1, username);
+
+            try(ResultSet resultSet = statement.executeQuery())
+            {
+                return resultSet.next();
+            }
+        }
+    }
+
     public boolean createUser(String username, String password) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();

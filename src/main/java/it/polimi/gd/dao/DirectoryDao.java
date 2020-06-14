@@ -1,6 +1,5 @@
 package it.polimi.gd.dao;
 
-import com.mysql.cj.xdevapi.ClientImpl;
 import it.polimi.gd.Application;
 import it.polimi.gd.beans.Directory;
 import it.polimi.gd.beans.Document;
@@ -9,7 +8,6 @@ import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,12 +16,10 @@ import java.util.Optional;
 public class DirectoryDao
 {
     private final ConnectionPool connectionPool;
-    private final SimpleDateFormat dateFormat;
 
     public DirectoryDao()
     {
         connectionPool = ConnectionPool.getInstance();
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     private Directory metadataFromResultSet(ResultSet resultSet) throws SQLException
@@ -31,7 +27,7 @@ public class DirectoryDao
         return new Directory(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
-                resultSet.getDate("creation_date"),
+                resultSet.getTimestamp("creation_date"),
                 resultSet.getInt("parent"),
                 resultSet.getInt("owner"));
     }
@@ -112,23 +108,26 @@ public class DirectoryDao
         }
     }
 
-    public int createDirectory(String directoryName, int parentId, int owner) throws SQLException
+    public Optional<Directory> createDirectory(String directoryName, int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "INSERT INTO directory (name, creation_date, parent, owner) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
         {
+            Timestamp now = new Timestamp(new Date().getTime());
+
             statement.setString(1, directoryName);
-            statement.setString(2, dateFormat.format(new Date()));
+            statement.setTimestamp(2, now);
             statement.setInt(3, parentId);
             statement.setInt(4, owner);
 
-            if(statement.executeUpdate() != 1) return -1;
+            if(statement.executeUpdate() != 1) return Optional.empty();
 
             try(ResultSet resultSet = statement.getGeneratedKeys())
             {
-                if(!resultSet.next()) return -1;
-                return resultSet.getInt(1);
+                if(!resultSet.next()) return Optional.empty();
+                int id = resultSet.getInt(1);
+                return Optional.of(new Directory(id, directoryName, now, parentId, owner));
             }
         }
     }

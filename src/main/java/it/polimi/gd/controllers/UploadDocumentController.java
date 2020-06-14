@@ -1,6 +1,7 @@
 package it.polimi.gd.controllers;
 
 import it.polimi.gd.beans.Directory;
+import it.polimi.gd.beans.Document;
 import it.polimi.gd.beans.User;
 import it.polimi.gd.dao.DirectoryDao;
 import it.polimi.gd.dao.DocumentDao;
@@ -96,20 +97,20 @@ public class UploadDocumentController extends HttpServlet
                 return;
             }
 
-            int documentId;
+            Optional<Document> document = documentDao.createDocument(name, summary.isEmpty() ? null : summary, documentType, parentId, user.getId());
 
-            if((documentId = documentDao.createDocument(name, summary.isEmpty() ? null : summary, documentType, parentId, user.getId())) <= 0)
+            if(!document.isPresent())
             {
                 resp.sendError(409, "Document already exists!");
                 return;
             }
 
-            FileOutputStream outputStream = fileManager.getFileOutputStream(documentId, user.getId());
+            FileOutputStream outputStream = fileManager.getFileOutputStream(document.get().getId(), user.getId());
 
             if(outputStream == null)
             {
                 resp.sendError(500, "Error uploading file!");
-                documentDao.deleteDocument(documentId, user.getId());
+                documentDao.deleteDocument(document.get().getId(), user.getId());
                 return;
             }
 
@@ -125,11 +126,7 @@ public class UploadDocumentController extends HttpServlet
 
             try(JsonGenerator generator = Json.createGenerator(resp.getWriter()))
             {
-                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                objectBuilder.add("id", documentId);
-                objectBuilder.add("parentId", parentId);
-                objectBuilder.add("name", name);
-                generator.write(objectBuilder.build());
+                generator.write(document.get().toJson().build());
             }
 
         }

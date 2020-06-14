@@ -4,6 +4,7 @@ import it.polimi.gd.Application;
 import it.polimi.gd.dao.UserDao;
 import org.thymeleaf.context.WebContext;
 
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 @WebServlet("/login")
+@MultipartConfig
 public class LoginController extends HttpServlet
 {
     private UserDao userDao;
@@ -38,6 +40,7 @@ public class LoginController extends HttpServlet
         WebContext webContext = new WebContext(req, resp, getServletContext(), req.getLocale());
         webContext.setVariable("maxUsernameLen", maxUsernameLength);
         webContext.setVariable("minPasswordLen", minPasswordLength);
+        webContext.setVariable("version", Application.getVersion());
         Application.getTemplateEngine().process("login", webContext, resp.getWriter());
     }
 

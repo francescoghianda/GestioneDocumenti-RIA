@@ -76,9 +76,9 @@ public class NewDirectoryController extends HttpServlet
                 return;
             }
 
-            int directoryId = directoryDao.createDirectory(name, parentId, user.getId());
+            Optional<Directory> dir = directoryDao.createDirectory(name, parentId, user.getId());
 
-            if(directoryId < 0)
+            if(!dir.isPresent())
             {
                 resp.sendError(500, "Error creating new folder!");
                 return;
@@ -86,11 +86,7 @@ public class NewDirectoryController extends HttpServlet
 
             try(JsonGenerator generator = Json.createGenerator(resp.getWriter()))
             {
-                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                objectBuilder.add("id", directoryId);
-                objectBuilder.add("parentId", parentId);
-                objectBuilder.add("name", name);
-                generator.write(objectBuilder.build());
+                generator.write(dir.get().toJson().build());
             }
 
 

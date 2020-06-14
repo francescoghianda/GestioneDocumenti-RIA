@@ -7,7 +7,6 @@ import it.polimi.utils.sql.ConnectionPool;
 import it.polimi.utils.sql.PooledConnection;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,12 +15,10 @@ import java.util.Optional;
 public class DocumentDao
 {
     private final ConnectionPool connectionPool;
-    private final SimpleDateFormat dateFormat;
 
     public DocumentDao()
     {
         connectionPool = ConnectionPool.getInstance();
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     private Document metadataFromResultSet(ResultSet resultSet) throws SQLException
@@ -103,17 +100,17 @@ public class DocumentDao
         }
     }
 
-    public int createDocument(String documentName, String summary, String documentType, int parentId, int owner) throws SQLException
+    public Optional<Document> createDocument(String documentName, String summary, String documentType, int parentId, int owner) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
                     "INSERT INTO document (name, creation_date, summary, type, parent, owner) VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS))
         {
 
-            String date = dateFormat.format(new Date());
+            Timestamp now = new Timestamp(new Date().getTime());
 
             statement.setString(1, documentName);
-            statement.setString(2, date);
+            statement.setTimestamp(2, now);
             statement.setString(3, summary);
             statement.setString(4, documentType);
             statement.setInt(5, parentId);
@@ -121,7 +118,7 @@ public class DocumentDao
 
             connection.getConnection().setAutoCommit(false);
 
-            if(statement.executeUpdate() == 0)return -1;
+            if(statement.executeUpdate() == 0)return Optional.empty();
 
             try(ResultSet resultSet = statement.getGeneratedKeys())
             {
@@ -129,10 +126,12 @@ public class DocumentDao
                 {
                     connection.getConnection().rollback();
                     connection.getConnection().setAutoCommit(true);
-                    return -1;
+                    return Optional.empty();
                 }
+                connection.getConnection().commit();
                 connection.getConnection().setAutoCommit(true);
-                return resultSet.getInt(1);
+                int id = resultSet.getInt(1);
+                return Optional.of(new Document(id, documentName, now, summary, documentType, parentId, owner));
             }
         }
 

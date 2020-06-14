@@ -1,12 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap");
+:root {
+  --max-size: 815px;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   height: 100%;
-  padding-left: 20%;
-  padding-right: 20%;
+  padding-left: calc((100% - var(--max-size)) / 2);
+  padding-right: calc((100% - var(--max-size)) / 2);
   background-color: white;
   font-family: "Roboto", sans-serif;
   font-weight: 400;
@@ -28,6 +32,14 @@ body {
     transform: rotate(360deg);
   }
 }
+@keyframes loader-animation-2 {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 .loader {
   width: 24px;
   height: 24px;
@@ -35,37 +47,43 @@ body {
   animation-iteration-count: infinite;
   animation-timing-function: ease;
   animation-duration: 1s;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 .loader.hidden {
   display: none;
+}
+.loader.anim2 {
+  animation-name: loader-animation-2;
 }
 
 #trashcan {
   position: sticky;
 }
 
-.container {
-  width: 100%;
-  overflow: hidden;
-}
-.container > header {
+header {
   display: flex;
   align-items: center;
   justify-content: left;
-  padding-left: 16px;
-  padding-right: 16px;
   width: 100%;
   height: 56px;
   background-color: #3f85ff;
   color: white;
   font-size: 24px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
-.container > header > a {
+header > a {
   width: 24px;
   height: 24px;
   margin-right: 16px;
 }
-.container > footer {
+
+.page-header {
+  border-bottom: 1px solid rgba(0, 17, 80, 0.1);
+}
+
+.page-footer {
   display: flex;
   align-items: center;
   padding-left: 8px;
@@ -74,6 +92,14 @@ body {
   background-color: #001150;
   color: white;
   font-size: 12px;
+}
+
+.container {
+  width: 100%;
+  overflow: hidden;
+}
+.container.hidden {
+  display: none;
 }
 
 .right-buttons {
@@ -207,6 +233,10 @@ body {
   animation-timing-function: ease;
   animation-iteration-count: 1;
   animation-duration: 0.4s;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+.modal.error-modal .okay-btn:hover {
+  background-color: #c61d1d;
 }
 .modal.hidden {
   display: none;
@@ -245,7 +275,7 @@ body {
 }
 .modal > .content > form {
   width: 100%;
-  background-color: white;
+  border: none;
   text-align: left;
 }
 .modal > .content > form > .input-container > label {
@@ -306,19 +336,26 @@ body {
   width: 28px;
   height: 28px;
   outline: none;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 .icon-button > img {
   width: 24px;
   height: 24px;
 }
+.icon-button.back-button {
+  margin-left: 0;
+  padding-left: 0;
+  justify-content: flex-start;
+}
 
-.document-table {
+.document-table, .properties-table {
   width: 100%;
   overflow: hidden;
   border-collapse: collapse;
   border: solid 0;
 }
-.document-table > tbody > tr {
+.document-table > tbody > tr, .properties-table > tbody > tr {
   width: 100%;
   height: 56px;
   background-color: #4a6cc4;
@@ -327,7 +364,7 @@ body {
   border: solid 0;
   overflow: hidden;
 }
-.document-table > tbody > tr > th {
+.document-table > tbody > tr > th, .properties-table > tbody > tr > th {
   width: 1%;
   text-align: left;
   padding-left: 16px;
@@ -335,13 +372,26 @@ body {
   border-collapse: collapse;
   border: solid 0;
 }
-.document-table > tbody > tr > td {
+.document-table > tbody > tr > td, .properties-table > tbody > tr > td {
   padding: 16px;
   border-collapse: collapse;
   border: solid 0;
   overflow: hidden;
   overflow-wrap: anywhere;
   hyphens: auto;
+}
+
+.properties-table {
+  text-align: left;
+}
+.properties-table > tbody > tr {
+  height: 35px;
+  min-height: 35px;
+  background-color: #ffffff;
+  color: black;
+}
+.properties-table > tbody > tr > td {
+  padding: 8px 8px 8px 16px;
 }
 
 .button {
@@ -380,8 +430,10 @@ form {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: #4a6cc4;
+  background-color: #ffffff;
   padding: 8px;
+  border-left: 1px solid rgba(0, 17, 80, 0.4);
+  border-right: 1px solid rgba(0, 17, 80, 0.4);
 }
 form > .form-error-message {
   display: none;
@@ -393,6 +445,8 @@ form > .form-error-message {
   border: 2px solid #c61d1d;
   border-radius: 4px;
   margin-bottom: 16px;
+  padding: 8px;
+  text-align: center;
 }
 form > .form-error-message.show {
   display: flex;
@@ -424,9 +478,11 @@ form input[type=text] {
   margin-top: 8px;
   margin-bottom: 22px;
   font-size: 24px;
-  border: 1px solid #001150;
-  border-radius: 4px;
+  border: 1px solid rgba(0, 17, 80, 0.4);
   padding: 8px;
+  outline: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 form input[type=password] {
   position: relative;
@@ -435,9 +491,11 @@ form input[type=password] {
   margin-top: 8px;
   margin-bottom: 22px;
   font-size: 24px;
-  border: 1px solid #001150;
-  border-radius: 4px;
+  border: 1px solid rgba(0, 17, 80, 0.4);
   padding: 8px;
+  outline: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 form .input-container {
   position: relative;
@@ -453,11 +511,12 @@ form .input-container.invalid::after {
   color: #c61d1d;
   font-size: 12px;
 }
-form input[type=text]:invalid, form input[type=password]:invalid, form textarea:invalid {
+form input[type=text]:focus:invalid, form input[type=password]:focus:invalid, form textarea:focus:invalid,
+form .input-container.invalid input[type=text], form .input-container.invalid input[type=password], form .input-container.invalid textarea {
   position: relative;
-  border-bottom: 2px solid #c61d1d;
+  border-bottom: 2px solid #e31e1e;
 }
-form input[type=text]:valid, form input[type=password]:valid, form textarea:valid {
+form input[type=text]:focus:valid, form input[type=password]:focus:valid, form textarea:focus:valid {
   border-bottom: 2px solid #0fac0f;
 }
 form input[type=submit] {
@@ -465,25 +524,31 @@ form input[type=submit] {
   text-transform: uppercase;
   padding-left: 8px;
   padding-right: 8px;
-  height: 56px;
+  height: 48px;
   min-width: 100px;
   background-color: #3f85ff;
   color: white;
-  border: 1px solid #001150;
+  border: 1px solid rgba(0, 17, 80, 0.4);
   border-radius: 4px;
   outline: none;
   margin-left: auto;
   margin-top: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+form input[type=submit]:hover {
+  background-color: #72a6ff;
+}
+form input[type=submit]:active {
+  background-color: #1867ff;
 }
 form input[type=file] {
   position: relative;
   margin-top: 8px;
   margin-bottom: 22px;
-  color: white;
-  font-size: 16px;
-}
-form input[type=file].back-label {
   color: black;
+  font-size: 16px;
+  outline: none;
 }
 form textarea {
   position: relative;
@@ -491,15 +556,17 @@ form textarea {
   margin-top: 8px;
   margin-bottom: 22px;
   font-size: 24px;
-  border: 1px solid #001150;
-  border-radius: 4px;
+  border: 1px solid rgba(0, 17, 80, 0.4);
   resize: vertical;
   min-height: 56px;
   padding: 8px;
+  outline: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 form label {
   font-size: 18px;
-  color: white;
+  color: black;
 }
 
 .context-menu {
@@ -526,6 +593,12 @@ form label {
 }
 .context-menu > .context-menu-item:hover {
   background-color: #cfdbff;
+}
+
+.logo {
+  width: 56px;
+  height: 56px;
+  margin-right: 16px;
 }
 
 /*# sourceMappingURL=main.css.map */

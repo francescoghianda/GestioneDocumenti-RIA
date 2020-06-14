@@ -3,6 +3,7 @@ package it.polimi.gd.beans;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public class Directory implements Bean
@@ -17,11 +18,11 @@ public class Directory implements Bean
 
     public Directory() {}
 
-    public Directory(int id, String name, Date creationDate, int parentId, int owner)
+    public Directory(int id, String name, Timestamp creationDate, int parentId, int owner)
     {
         this.id = id;
         this.name = name;
-        this.creationDate = creationDate;
+        this.creationDate = new Date(creationDate.getTime());
         this.parentId = parentId;
         this.owner = owner;
     }
