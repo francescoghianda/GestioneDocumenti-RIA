@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>Home Page</title>
 
+    <link rel="shortcut icon" href="../../assets/images/favicon.ico" th:href="@{/assets/images/favicon.ico}" type="image/x-icon">
+    <link rel="icon" href="../../assets/images/favicon.ico" th:href="@{/assets/images/favicon.ico}" type="image/x-icon">
     <link rel="stylesheet" href="../../assets/css/main.css" th:href="@{/assets/css/main.css}">
+
+    <script src="../../assets/js/i18n.js" th:src="@{/assets/js/i18n.js}"></script>
     <script src="../../assets/js/utils.js" th:src="@{/assets/js/utils.js}"></script>
     <script src="../../assets/js/main.js" th:src="@{/assets/js/main.js}"></script>
 
@@ -16,17 +20,30 @@
         <img class="logo" src="../../assets/images/cloud-24px.svg" th:src="@{/assets/images/cloud-24px.svg}">
         <span th:text="${user.username}">username</span>
         <div class="right-buttons">
+            <button class="button" id="i18n-btn">
+                <img class="btn-icon" src="../../assets/images/language-24px.svg" th:src="@{/assets/images/language-24px.svg}">
+                <span>it</span>
+            </button>
             <button class="button" id="logout-btn">
                 <img class="btn-icon" src="../../assets/images/exit_to_app-24px.svg" th:src="@{/assets/images/exit_to_app-24px.svg}">
-                logout
+                <span data-locale-key="logout">esci</span>
             </button>
         </div>
     </header>
 
     <div class="container" id="directories-view">
         <header>
-            <span>I tuoi file</span>
+            <span data-locale-key="yourFile">I tuoi file</span>
             <div class="right-buttons">
+                <label class="small-label" for="order-select" data-locale-key="orderBy">Ordina per:</label>
+                <select id="order-select">
+                    <option value="name" data-locale-key="name">Nome</option>
+                    <option value="date" data-locale-key="creationDate">Data di creazione</option>
+                </select>
+                <div title="Inverti ordine" class="toggle toggle-invert-order">
+                    <input id="invert-order-toggle" type="checkbox">
+                    <label for="invert-order-toggle"></label>
+                </div>
                 <button title="Aggiorna i dati col server" id="sync-btn" class="icon-button anim2">
                     <img class="btn-icon" src="../../assets/images/refresh-24px.svg" th:src="@{/assets/images/refresh-24px.svg}">
                 </button>
@@ -41,10 +58,7 @@
             <li class="item" id="trashcan" title="Trascina una cartella o un documento per eliminarlo"> <!-- TRASH CAN -->
                 <div class="item-content">
                     <img class="item-icon" src="../../assets/images/delete-24px.svg" th:src="@{/assets/images/delete-24px.svg}">
-                    <span class="item-text">Cestino</span>
-                    <div class="right-buttons">
-
-                    </div>
+                    <span class="item-text" data-locale-key="trashcan">Cestino</span>
                 </div>
             </li>
 
@@ -67,19 +81,19 @@
         <table class="document-table">
             <tbody>
             <tr>
-                <th>Data di creazione:&nbsp;</th>
+                <th data-locale-key="creationDate2">Data di creazione:&nbsp;</th>
                 <td id="document-date">00-00-00 00:00:00</td>
             </tr>
             <tr>
-                <th>Tipo documento:&nbsp;</th>
+                <th data-locale-key="documentType">Tipo documento:&nbsp;</th>
                 <td id="document-type">DOC</td>
             </tr>
             <tr>
-                <th>Percorso:&nbsp;</th>
+                <th data-locale-key="path2">Percorso:&nbsp;</th>
                 <td id="document-path">/</td>
             </tr>
             <tr>
-                <th>Summary:&nbsp;</th>
+                <th data-locale-key="summary">Summary:&nbsp;</th>
                 <td id="document-summary"></td>
             </tr>
             </tbody>
@@ -96,13 +110,13 @@
             <button class="icon-button close-btn">
                 <img src="../../assets/images/close-24px.svg" th:src="@{/assets/images/close-24px.svg}">
             </button>
-            <span class="title">Conferma cancellazione</span>
+            <span class="title" data-locale-key="cancelConfirm">Conferma cancellazione</span>
         </header>
-        <div class="content">
+        <div class="content" data-locale-key="confirmDeleteText">
             Il documento sar&agrave; elimitato definitivamente.
         </div>
         <footer>
-            <button class="cancel-btn" value="CANCEL">annulla</button>
+            <button class="cancel-btn" value="CANCEL" data-locale-key="cancel">annulla</button>
             <button class="okay-btn" value="OK">ok</button>
         </footer>
     </div>

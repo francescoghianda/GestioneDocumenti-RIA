@@ -53,6 +53,10 @@
     <param-value>50</param-value>
   </context-param>
   <context-param>
+    <param-name>maxEmailLength</param-name>
+    <param-value>100</param-value>
+  </context-param>
+  <context-param>
     <param-name>minPasswordLength</param-name>
     <param-value>6</param-value>
   </context-param>

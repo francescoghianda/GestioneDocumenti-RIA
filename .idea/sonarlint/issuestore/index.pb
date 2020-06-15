@@ -1,8 +1,6 @@
 
 F
 Gestione Documenti.iml,0/e/0ebe59c96e87f7e9f1b981789653ca07b0d701f5
-d
-4src/main/webapp/WEB-INF/templates/new-directory.html,4/0/40ae838a6f00fbf8557560300858fa13be8e3095
 [
 +src/main/java/it/polimi/gd/Application.java,9/3/9367a4a7f228335d1a006ffb057b63f61d0ab478
 Z
@@ -39,8 +37,6 @@ b
 2src/main/webapp/assets/images/folder_open-24px.svg,e/5/e58af8b3b43e7e0d43d0268dcadc315026519a9c
 j
 :src/main/java/it/polimi/gd/controllers/HomeController.java,f/9/f9a8123dd5000753e8c8fa1ccbe94d2deae50e08
-]
--src/main/webapp/assets/js/jquery-3.5.1.min.js,6/3/637aaade86c2b64752fe493d31a89880cdcde13e
 ]
 -src/main/webapp/assets/images/loader-24px.svg,9/c/9c0f3732073b7e8851b4726464afc143234b9902
 \
@@ -81,3 +77,21 @@ O
 src/main/webapp/WEB-INF/web.xml,2/e/2e22b6edd746fa3dc40ad7276c87c8d87d72a392
 [
 +src/main/webapp/WEB-INF/templates/home.html,b/6/b6ee712d09490d168097dfc1846c3b8b90a5fef5
+s
+Csrc/main/java/it/polimi/gd/controllers/CheckUsernameController.java,3/3/33dac2b50bd3f5a8b704df8b70cc8cec41ea7569
+\
+,src/main/webapp/assets/images/cloud-24px.svg,a/2/a2fc8939221dcc36cf41ba13c26a1f8b645c0c82
+b
+2src/main/webapp/assets/images/exit_to_app-24px.svg,0/f/0f7d93857ba5a3daee66373894e512a65467e759
+t
+Dsrc/main/java/it/polimi/gd/controllers/GetDirectoriesController.java,a/0/a082ddc7d8e01f72708c3ec3f6c05d6a8a07781c
+[
++src/main/webapp/assets/images/info-24px.svg,6/4/64c23847f8ce1a2a83a2a3536274d8699c2fa352
+R
+"src/main/webapp/assets/js/login.js,d/8/d899a9030756b868122c1e7b6345a0aff77b00c2
+^
+.src/main/webapp/assets/images/refresh-24px.svg,e/b/ebcf5ecbed3cefae7924b72d0dfc747f4468d7bd
+U
+%src/main/webapp/assets/js/register.js,9/a/9aee98da6efe4890e7a07f87b0c95307ec4e9840
+R
+"src/main/webapp/assets/js/utils.js,8/d/8dd97e18c28bdc6d83c0ead198444ecbc159d9e0

@@ -3,6 +3,7 @@ package it.polimi.gd.controllers;
 import it.polimi.gd.Application;
 import it.polimi.gd.dao.UserDao;
 import org.thymeleaf.context.WebContext;
+import sun.jvm.hotspot.jdi.IntegerTypeImpl;
 
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -12,14 +13,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @WebServlet("/register")
 @MultipartConfig
 public class RegisterController extends HttpServlet
 {
+    public static final Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+
     private UserDao userDao;
     private int maxUsernameLength;
     private int minPasswordLength;
+    private int maxEmailLength;
 
     public RegisterController()
     {
@@ -32,6 +37,7 @@ public class RegisterController extends HttpServlet
         userDao = new UserDao();
         maxUsernameLength = Integer.parseInt(getServletContext().getInitParameter("maxUsernameLength"));
         minPasswordLength = Integer.parseInt(getServletContext().getInitParameter("minPasswordLength"));
+        maxEmailLength = Integer.parseInt(getServletContext().getInitParameter("maxEmailLength"));
     }
 
     @Override
@@ -39,6 +45,7 @@ public class RegisterController extends HttpServlet
     {
         WebContext webContext = new WebContext(req, resp, getServletContext(), resp.getLocale());
         webContext.setVariable("maxUsernameLen", maxUsernameLength);
+        webContext.setVariable("maxEmailLen", maxEmailLength);
         webContext.setVariable("minPasswordLen", minPasswordLength);
         webContext.setVariable("version", Application.getVersion());
         Application.getTemplateEngine().process("register", webContext, resp.getWriter());
@@ -50,6 +57,7 @@ public class RegisterController extends HttpServlet
         try
         {
             String username = Objects.toString(req.getParameter("username"), "");
+            String email = Objects.toString(req.getParameter("email"), "");
             String password = Objects.toString(req.getParameter("password"), "");
             String passwordConfirm = Objects.toString(req.getParameter("password-confirm"), "");
 
@@ -59,13 +67,19 @@ public class RegisterController extends HttpServlet
                 return;
             }
 
+            if(email.trim().isEmpty() || email.length() > maxEmailLength || !emailPattern.matcher(email).matches())
+            {
+                resp.sendError(400, "Invalid email!");
+                return;
+            }
+
             if(password.length() < minPasswordLength || !password.equals(passwordConfirm))
             {
                 resp.sendError(400, "Invalid password!");
                 return;
             }
 
-            if(!userDao.createUser(username, password))
+            if(!userDao.createUser(username, email, password))
             {
                 resp.sendError(500, "Error! Username not created!");
                 return;

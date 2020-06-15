@@ -11,13 +11,14 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Objects;
 
-@WebServlet("/check-username")
-public class CheckUsernameController extends HttpServlet
+@WebServlet("/check-email")
+public class CheckEmailController extends HttpServlet
 {
     private UserDao userDao;
-    private int maxUsernameLength;
 
-    public CheckUsernameController()
+    private int maxEmailLength;
+
+    public CheckEmailController()
     {
         super();
     }
@@ -26,7 +27,7 @@ public class CheckUsernameController extends HttpServlet
     public void init()
     {
         userDao = new UserDao();
-        maxUsernameLength = Integer.parseInt(getServletContext().getInitParameter("maxUsernameLength"));
+        maxEmailLength = Integer.parseInt(getServletContext().getInitParameter("maxEmailLength"));
     }
 
     @Override
@@ -34,18 +35,23 @@ public class CheckUsernameController extends HttpServlet
     {
         try
         {
-            String username = Objects.toString(req.getParameter("username"), "");
+            String email = Objects.toString(req.getParameter("email"), "");
             PrintWriter pw = resp.getWriter();
             resp.setStatus(200);
 
-            if(username.trim().isEmpty() || username.length() > maxUsernameLength)
+            if(email.trim().isEmpty() || email.length() > maxEmailLength || !RegisterController.emailPattern.matcher(email).matches())
             {
                 pw.print("invalid");
                 return;
             }
 
-            if(userDao.usernameExists(username)) pw.print("unavailable");
-            else pw.print("ok");
+            if(userDao.emailExists(email))
+            {
+                pw.print("unavailable");
+                return;
+            }
+
+            pw.print("ok");
         }
         catch (SQLException e)
         {

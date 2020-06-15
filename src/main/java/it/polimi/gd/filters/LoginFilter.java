@@ -15,7 +15,7 @@ public class LoginFilter implements Filter
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
         String requestURI = request.getRequestURI();
-        if(requestURI.startsWith("/assets/") || requestURI.startsWith("/register") || requestURI.startsWith("/check-username"))
+        if(requestURI.startsWith("/assets/") || requestURI.startsWith("/register") || requestURI.startsWith("/check-username") || requestURI.startsWith("/check-email"))
         {
             filterChain.doFilter(request, servletResponse);
             return;

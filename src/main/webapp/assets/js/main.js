@@ -1,5 +1,7 @@
 (function ()
 {
+    let locale = new I18N('it');
+
     const dateTimeFormat = new Intl.DateTimeFormat('it', {
         year: 'numeric', month: 'short', day: '2-digit',
         hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false
@@ -32,6 +34,8 @@
     let propertiesFormat;
     let propertiesPath;
 
+    let orderSelectElement;
+
     window.onload = function () {
         rootDirectoriesContextMenu = new ContextMenu();
         subDirectoriesContextMenu = new ContextMenu();
@@ -55,6 +59,8 @@
         propertiesType = document.getElementById('properties-type');
         propertiesFormat = document.getElementById('properties-format');
         propertiesPath = document.getElementById('properties-path');
+        orderSelectElement = document.getElementById('order-select');
+
 
         initializeDirectories().then(() => console.log('Directories initialized.'));
 
@@ -63,6 +69,32 @@
         document.getElementById('logout-btn').addEventListener('click', e => {
             deleteDirectories();
             window.location.href = '/logout';
+        });
+
+        Array.from(document.querySelectorAll('[data-locale-key]')).forEach(element =>
+        {
+           let key = element.getAttribute('data-locale-key');
+           locale.bindElement(element, key);
+        });
+
+        document.getElementById('i18n-btn').addEventListener('click', function (e) {
+            if(locale.locale === 'it'){
+                locale.setLocale('en');
+                e.currentTarget.querySelector('span').innerText = 'en';
+            }
+            else{
+                locale.setLocale('it');
+                e.currentTarget.querySelector('span').innerText = 'it';
+            }
+        });
+
+        orderSelectElement.addEventListener('change', function (e) {
+            let selected = e.target.value;
+            sortRecursive(Directory.rootDirectory, selected);
+        });
+
+        document.getElementById('invert-order-toggle').addEventListener('change', function(e){
+            reverseDirectoryListRecursive(Directory.rootDirectory);
         });
 
         document.getElementById('sync-btn').addEventListener('click', function (e) {
@@ -428,6 +460,8 @@
         documentElement.setAttribute('id', `document-${documentJson.id}`)
         documentElement.setAttribute('data-parent-id', documentJson.parentId);
         documentElement.setAttribute('draggable', 'true');
+        documentElement.setAttribute('data-document-date', documentJson.creationDate);
+        documentElement.setAttribute('data-document-name', documentJson.name);
 
         let documentContent = document.createElement('div');
         documentContent.classList.add('item-content', 'third-level');
@@ -549,6 +583,11 @@
                 if(self.list.childElementCount === 1 && self.id !== 0) self.emptyFolderItem.classList.add('hidden-item');
                 self.list.appendChild(dir.item);
             });
+            sort(self, orderSelectElement.options[orderSelectElement.selectedIndex].value);
+        }
+
+        this.getSubDirectories = function () {
+            return subDirectories;
         }
 
         this.addSubDirectory = function (dir) {
@@ -559,6 +598,7 @@
             dir.parent = this;
             if(this.list.childElementCount === 1 && this.id !== 0) this.emptyFolderItem.classList.add('hidden-item');
             this.list.appendChild(dir.item);
+            sort(self, orderSelectElement.options[orderSelectElement.selectedIndex].value);
         }
 
         this.addDocument = function (documentJson) {
@@ -722,12 +762,14 @@
             openFolderButton.classList.add('button', 'open-folder-btn');
             openFolderButton.innerText = 'apri';
             openFolderButton.addEventListener('click', e => openFolderOnClickHandler(e));
+            locale.bindElement(openFolderButton, 'open');
 
             let closeFolderButton = document.createElement('button');
             closeFolderButton.classList.add('button', 'close-folder-btn');
             closeFolderButton.innerText = 'chiudi';
             closeFolderButton.style.display = 'none';
             closeFolderButton.addEventListener('click', e => closeFolderOnClickHandler(e));
+            locale.bindElement(closeFolderButton, 'close');
 
             let loader = document.createElement('img');
             loader.classList.add('loader', 'hidden');
@@ -775,6 +817,7 @@
             let emptyFolderText = document.createElement('a');
             emptyFolderText.classList.add('item-text');
             emptyFolderText.innerText = 'Cartella vuota';
+            locale.bindElement(emptyFolderText, 'emptyFolder');
 
             emptyFolderItemContent.appendChild(emptyFolderText);
             emptyFolderItemElement.appendChild(emptyFolderItemContent);
@@ -809,6 +852,62 @@
 
     }
 
+    /*
+         DIRECTORY SORTING FUNCTIONS
+     */
+
+    function compare(a, b){
+        if(a < b)return -1;
+        if(a > b)return  1;
+        return 0;
+    }
+
+    function sortRecursive(directory, mode) {
+        sort(directory, mode);
+        directory.getSubDirectories().forEach(dir => sortRecursive(dir, mode));
+    }
+
+    function reverseDirectoryList(directory) {
+        let subDirectories = directory.getSubDirectories();
+        subDirectories.reverse().forEach(dir => directory.list.appendChild(dir.item));
+
+        let documentElements = Array.from(directory.list.querySelectorAll(":scope > .item[data-document-name]"));
+        documentElements.reverse().forEach(doc => directory.list.appendChild(doc));
+    }
+
+    function reverseDirectoryListRecursive(directory) {
+        reverseDirectoryList(directory);
+        directory.getSubDirectories().forEach(dir => reverseDirectoryListRecursive(dir));
+    }
+
+    function sort(directory, mode){
+        //SORT DIRECTORIES
+        let subDirectories = directory.getSubDirectories();
+        let list = directory.list;
+        subDirectories.sort((dir1, dir2) =>{
+            if(mode === 'date')
+                return compare(new Date(dir2.json.creationDate), new Date(dir1.json.creationDate));
+            else if(mode === 'name')
+                return compare(dir1.name, dir2.name);
+        });
+        if(document.getElementById('invert-order-toggle').checked)subDirectories.reverse();
+        subDirectories.forEach(dir => list.appendChild(dir.item));
+
+        //SORT DOCUMENTS
+        let documentElements = Array.from(list.querySelectorAll(":scope > .item[data-document-name]"));
+        documentElements.sort((doc1, doc2) =>{
+            if(mode === 'date')
+                return compare(new Date(doc2.getAttribute("data-document-date")), new Date(doc1.getAttribute("data-document-date")));
+            else if(mode === 'name')
+                return compare(doc1.getAttribute("data-document-name"), doc2.getAttribute("data-document-name"));
+        });
+        documentElements.forEach(doc => list.appendChild(doc));
+    }
+
+    /*
+         SESSION STORAGE FUNCTIONS
+     */
+
     function addDirectory(directory)
     {
         console.log(Directory.rootDirectory);
@@ -829,6 +928,4 @@
     function deleteDirectories() {
         window.sessionStorage.removeItem('directories');
     }
-
-
 })();

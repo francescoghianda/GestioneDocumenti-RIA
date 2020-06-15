@@ -471,7 +471,7 @@ form > .form-row > *:first-child {
 form > .form-row > *:last-child {
   margin-right: 0;
 }
-form input[type=text] {
+form input[type=text], form input[type=email] {
   position: relative;
   width: 100%;
   height: 56px;
@@ -511,12 +511,12 @@ form .input-container.invalid::after {
   color: #c61d1d;
   font-size: 12px;
 }
-form input[type=text]:focus:invalid, form input[type=password]:focus:invalid, form textarea:focus:invalid,
+form input[type=text]:focus:invalid, form input[type=email]:focus:invalid, form input[type=password]:focus:invalid, form textarea:focus:invalid,
 form .input-container.invalid input[type=text], form .input-container.invalid input[type=password], form .input-container.invalid textarea {
   position: relative;
   border-bottom: 2px solid #e31e1e;
 }
-form input[type=text]:focus:valid, form input[type=password]:focus:valid, form textarea:focus:valid {
+form input[type=text]:focus:valid, form input[type=email]:focus:valid, form input[type=password]:focus:valid, form textarea:focus:valid {
   border-bottom: 2px solid #0fac0f;
 }
 form input[type=submit] {
@@ -593,6 +593,54 @@ form label {
 }
 .context-menu > .context-menu-item:hover {
   background-color: #cfdbff;
+}
+
+.small-label {
+  font-size: 14px;
+}
+
+select {
+  margin-left: 8px;
+  margin-right: 16px;
+  padding-left: 4px;
+  padding-right: 4px;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  height: 28px;
+  outline: none;
+  color: white;
+  background-color: #3f85ff;
+}
+
+.toggle {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+.toggle > input[type=checkbox] {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+}
+.toggle > label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.toggle-invert-order > label {
+  background-image: url("/assets/images/arrow_drop_up-24px.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: rotate(180deg);
+}
+.toggle-invert-order > input[type=checkbox]:checked + label {
+  transform: rotate(0deg);
 }
 
 .logo {

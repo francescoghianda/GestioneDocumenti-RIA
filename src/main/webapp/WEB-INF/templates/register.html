@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Registrazione</title>
 
+    <link rel="shortcut icon" href="../../assets/images/favicon.ico" th:href="@{/assets/images/favicon.ico}" type="image/x-icon">
+    <link rel="icon" href="../../assets/images/favicon.ico" th:href="@{/assets/images/favicon.ico}" type="image/x-icon">
     <link rel="stylesheet" href="../../assets/css/main.css" th:href="@{/assets/css/main.css}">
     <script src="../../assets/js/utils.js" th:src="@{/assets/js/utils.js}"></script>
     <script src="../../assets/js/main.js" th:src="@{/assets/js/main.js}"></script>
@@ -22,6 +24,10 @@
                 <input id="input-username" type="text" name="username" th:maxlength="${maxUsernameLen}" required>
             </div>
             <div class="input-container">
+                <label for="input-email">Email:</label>
+                <input id="input-email" type="email" name="email" th:maxlength="${maxEmailLen}" required>
+            </div>
+            <div class="input-container">
                 <label for="input-password">Password:</label>
                 <input id="input-password" type="password" name="password" th:minlength="${minPasswordLen}" required>
             </div>
@@ -35,18 +41,6 @@
     <footer class="page-footer" th:text="'v. '+${version}">
         v. 1.0 - RIA
     </footer>
-
-    <div class="modal hidden">
-        <header>
-
-        </header>
-        <div class="content">
-
-        </div>
-        <footer>
-
-        </footer>
-    </div>
 
     <div class="modalbg hidden"></div>
 </body>

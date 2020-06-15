@@ -159,11 +159,11 @@ function Form(form)
         }
     }
 
-    this.addOnlineValidation = function (inputId, action, errorMessage) {
+    this.addOnlineValidation = function (inputId, action, callback) {
         onlineValidations.push({
             id: inputId,
             action: action,
-            error: errorMessage
+            callback: callback
         });
     }
 
@@ -226,11 +226,10 @@ function Form(form)
                     request.onreadystatechange = function () {
                         if(request.readyState === XMLHttpRequest.DONE){
                             if(request.status < 400){
-                                if(request.responseText === 'valid'){
-                                    resolve(true);
-                                }
-                                else{
-                                    inputElement.setCustomValidity(onlineValidation.error);
+                                let errorMessage = onlineValidation.callback(request.responseText);
+                                if(!errorMessage)resolve(true);
+                                else {
+                                    inputElement.setCustomValidity(errorMessage);
                                     resolve(false);
                                 }
                             }

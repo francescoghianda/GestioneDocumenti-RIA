@@ -34,14 +34,30 @@ public class UserDao
         }
     }
 
-    public boolean createUser(String username, String password) throws SQLException
+    public boolean emailExists(String email) throws SQLException
     {
         try(PooledConnection connection = connectionPool.getConnection();
             PreparedStatement statement = connection.getConnection().prepareStatement(
-                    "INSERT INTO user (username, password) VALUES (?, ?)"))
+                    "SELECT TRUE FROM user WHERE email = ?"))
+        {
+            statement.setString(1, email);
+
+            try(ResultSet resultSet = statement.executeQuery())
+            {
+                return resultSet.next();
+            }
+        }
+    }
+
+    public boolean createUser(String username, String email, String password) throws SQLException
+    {
+        try(PooledConnection connection = connectionPool.getConnection();
+            PreparedStatement statement = connection.getConnection().prepareStatement(
+                    "INSERT INTO user (username, email, password) VALUES (?, ?, ?)"))
         {
             statement.setString(1, username);
-            statement.setString(2, PasswordHashGenerator.digest(password));
+            statement.setString(2, email);
+            statement.setString(3, PasswordHashGenerator.digest(password));
 
             return statement.executeUpdate() == 1;
         }
@@ -59,7 +75,7 @@ public class UserDao
                 if(!resultSet.next())return false;
                 String passwordDigest = resultSet.getString("password");
                 if(!PasswordHashGenerator.check(passwordDigest, password))return false;
-                session.setAttribute("user", new User(resultSet.getInt("id"), username));
+                session.setAttribute("user", new User(resultSet.getInt("id"), username, resultSet.getString("email")));
                 return true;
             }
         }
